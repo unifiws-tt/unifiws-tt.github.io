@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+ :root{--bg:#0a0b0e;--panel:rgba(23,23,26,.55);--border:#262629;--border-h:#3a3a3f;--txt:#fafafa;--muted:#71717a;--dim:#52525b;--blue:#2563eb;--blue-h:#3b82f6;--green:#6ee7b7;--red-bg:#1f0a0a;--red-bd:#5a1d1d;--red-tx:#fca5a5;--purple:#a78bfa}
+ *{box-sizing:border-box;font-family:'Inter',system-ui,-apple-system,sans-serif}
+ html,body{margin:0;background:var(--bg);color:var(--txt);-webkit-text-size-adjust:100%}
+ .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+ .grid-bg{background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 0);background-size:22px 22px;min-height:100vh}
+ .wrap{max-width:560px;margin:0 auto;padding:24px 20px}
+ .center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+ .logo{width:36px;height:36px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:18px}
+ .logo-sm{width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:15px}
+ label{color:var(--muted);font-size:12px;display:block;margin-bottom:6px}
+ input,textarea,select{width:100%;background:#161618;border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--txt);font-size:14px}
+ input::placeholder,textarea::placeholder{color:var(--dim)}
+ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--blue-h);outline-offset:1px}
+ select{-webkit-appearance:none;appearance:none;cursor:pointer}
+ select option{background:#161618}
+ textarea{resize:none}
+ .card{border:1px solid var(--border);border-radius:13px;padding:16px;background:var(--panel)}
+ .card.hl:hover{border-color:var(--border-h)}
+ .project-header{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.3);margin-top:12px;margin-bottom:4px}
+ .project-label{font-size:11px;font-weight:600;color:var(--purple);letter-spacing:.06em;text-transform:uppercase}
+ .btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:500;cursor:pointer;color:#fff;background:var(--blue);transition:background .15s}
+ .btn:hover{background:var(--blue-h)}
+ .btn:disabled{opacity:.5}
+ .btn-sm{border:none;border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;background:#27272a;color:#e4e4e7;transition:background .15s}
+ .btn-sm:hover{background:#3f3f46}
+ .btn-danger{background:var(--red-bg);color:var(--red-tx)}
+ .btn-danger:hover{background:#2d0f0f}
+ .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+ .between{display:flex;align-items:center;justify-content:space-between}
+ .muted{color:var(--muted);font-size:12px}
+ .dim{color:var(--dim);font-size:12px}
+ .masked{color:var(--dim);letter-spacing:3px}
+ .reveal{color:var(--green)}
+ .err{color:var(--red-tx);font-size:12px}
+ .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .break{word-break:break-all}
+ .mt2{margin-top:8px}.mt3{margin-top:12px}.mt6{margin-top:24px}.mt8{margin-top:32px}
+ .mb3{margin-bottom:12px}.mb6{margin-bottom:24px}
+ .stack>*+*{margin-top:12px}
+ .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;font-size:13px;border:1px solid;animation:fade .25s ease}
+ .toast-ok{background:#052e1d;border-color:#14532d;color:#86efac}
+ .toast-err{background:#2a0a0a;border-color:var(--red-bd);color:var(--red-tx)}
+ .empty{border:1px dashed var(--border);border-radius:13px;padding:28px;text-align:center;color:var(--dim);font-size:14px}
+ .logline{font-size:12px;color:var(--muted);display:grid;grid-template-columns:140px 80px 100px 1fr;gap:8px;border-bottom:1px solid rgba(38,38,41,.6);padding-bottom:6px;align-items:center}
+ .logbox{max-height:256px;overflow:auto}
+ .hide{display:none}
+ .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+ @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+ @media(max-width:480px){.two-col{grid-template-columns:1fr}.logline{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+<script>
+(function(){
+ "use strict";
+ var FN_URL="https://jmtcdegcsrxjenxjnxse.supabase.co/functions/v1/keyvault";
+ var PUB_KEY="sb_publishable_ufUjg7d8sbcyFCZUv1JvCg_0hAuhzm3";
+ var AUTH_BASE="https://jmtcdegcsrxjenxjnxse.supabase.co/auth/v1";
+ var state={token:"",email:"",secrets:null};
+ var revealCache={};
+
+ function el(id){return document.getElementById(id);}
+ function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+ function dots(n){var s="";var i;for(i=0;i<n;i++){s+="\u2022";}return s;}
+ function toast(msg,tone){var box=el("toast");box.innerHTML='<div class="toast '+(tone==="error"?"toast-err":"toast-ok")+'">'+esc(msg)+'</div>';window.setTimeout(function(){box.innerHTML="";},2600);}
+ function headers(token){return{"Content-Type":"application/json","apikey":PUB_KEY,"Authorization":"Bearer "+(token||PUB_KEY)};}
+
+ function doLogin(email,password){
+   return fetch(AUTH_BASE+"/token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUB_KEY},body:JSON.stringify({email:email,password:password})}).then(function(r){return r.json();});
+ }
+ function callFn(action,payload){
+   var body={action:action};if(payload){var k;for(k in payload){if(payload.hasOwnProperty(k)){body[k]=payload[k];}}}
+   return fetch(FN_URL,{method:"POST",headers:headers(state.token),body:JSON.stringify(body)}).then(function(r){
+     return r.json().then(function(data){return{ok:r.ok,status:r.status,data:data};}).catch(function(){return{ok:r.ok,status:r.status,data:{}};});
+   });
+ }
+ function errMsg(res){
+   if(res&&res.data&&res.data.error){return res.data.error;}
+   if(res&&res.status===401){return "Unauthorized (401) \u2014 not the owner, or session expired.";}
+   if(res&&res.status===403){return "Forbidden (403) \u2014 owner allowlist rejected.";}
+   return "Request failed ("+(res?res.status:"?")+").";
+ }
+
+ function groupByProject(arr){
+   var groups={};var order=[];var i;
+   for(i=0;i<arr.length;i++){
+     var p=arr[i].project||"(unknown)";
+     if(!groups[p]){groups[p]=[];order.push(p);}
+     groups[p].push(arr[i]);
+   }
+   return{groups:groups,order:order};
+ }
+
+ function renderLogin(){
+   el("app").innerHTML=
+     '<div class="center"><div style="width:100%;max-width:360px">'+
+     '<div class="row mb6"><div class="logo">&#x1F512;</div>'+
+     '<div style="margin-left:10px"><div style="font-weight:600;font-size:18px;line-height:1">KeyVault</div>'+
+     '<div class="dim" style="margin-top:4px">secret store &middot; owner access</div></div></div>'+
+     '<div class="stack">'+
+     '<div><label>Owner email</label><input id="li-email" type="email" autocomplete="username" placeholder="you@example.com"></div>'+
+     '<div><label>Password</label><input id="li-pass" type="password" autocomplete="current-password" placeholder=""></div>'+
+     '<div id="li-err" class="err hide"></div>'+
+     '<button id="li-btn" class="btn" style="width:100%">Unlock vault</button>'+
+     '</div>'+
+     '<div class="dim mt6" style="text-align:center">Access is logged. Owner allowlist enforced server-side.</div>'+
+     '<div style="text-align:center;margin-top:12px"><button id="fp-link" style="background:none;border:none;color:var(--blue-h);font-size:13px;cursor:pointer;text-decoration:underline">Forgot password?</button></div>'+
+     '</div></div>';
+   function submit(){
+     var email=el("li-email").value.trim();var pass=el("li-pass").value;var errBox=el("li-err");
+     if(!email||!pass){errBox.textContent="Email and password required.";errBox.className="err";return;}
+     var btn=el("li-btn");btn.disabled=true;btn.textContent="Unlocking...";errBox.className="err hide";
+     doLogin(email,pass).then(function(res){
+       if(res.access_token){state.token=res.access_token;state.email=email;renderVault();loadSecrets();}
+       else{btn.disabled=false;btn.textContent="Unlock vault";errBox.textContent=res.error_description||res.msg||"Login failed.";errBox.className="err";}
+     }).catch(function(){btn.disabled=false;btn.textContent="Unlock vault";errBox.textContent="Network error. Check connection.";errBox.className="err";});
+   }
+   el("li-btn").onclick=submit;
+   el("li-pass").onkeydown=function(e){if(e.key==="Enter"){submit();}};
+   el("li-email").onkeydown=function(e){if(e.key==="Enter"){el("li-pass").focus();}};
+   el("fp-link").onclick=renderForgot;
+ }
+
+ function renderVault(){
+   el("app").innerHTML=
+     '<div class="grid-bg"><div class="wrap">'+
+     '<div class="between mb6"><div class="row"><div class="logo-sm">&#x1F512;</div>'+
+     '<div style="margin-left:10px"><div style="font-weight:600;font-size:14px;line-height:1">KeyVault</div>'+
+     '<div class="mono dim truncate" style="margin-top:4px;max-width:200px">'+esc(state.email)+'</div></div></div>'+
+     '<button id="v-lock" class="btn-sm">Lock</button></div>'+
+     '<div class="stack">'+
+     '<div class="card">'+
+       '<div style="font-size:14px;font-weight:500;margin-bottom:12px">Add secret</div>'+
+       '<div class="stack">'+
+         '<div class="two-col">'+
+           '<div><label>Project</label><input id="add-project" class="mono" placeholder="ytfactory"></div>'+
+           '<div><label>Key name</label><input id="add-name" class="mono" placeholder="OPENAI_API_KEY"></div>'+
+         '</div>'+
+         '<div><label>Value</label><textarea id="add-val" class="mono" rows="2" placeholder="secret value"></textarea></div>'+
+         '<div><label>Description <span class="dim">(optional)</span></label><input id="add-desc" placeholder="brief note"></div>'+
+         '<button id="add-btn" class="btn">Save secret</button>'+
+       '</div>'+
+     '</div>'+
+     '<div class="card">'+
+       '<div class="between"><div style="font-size:14px;font-weight:500">Service Access</div>'+
+       '<button id="sa-toggle" class="btn-sm" disabled>...</button></div>'+
+       '<div class="dim mt2">Allow external services (e.g. YTFactory) to read secrets via service token. Owner UI access is unaffected.</div>'+
+       '<div id="sa-state" class="mt2"></div>'+
+     '</div>'+
+     '<div class="between" style="padding-top:4px"><div id="v-count" class="muted">Loading...</div>'+
+     '<button id="v-refresh" class="btn-sm">Refresh</button></div>'+
+     '<div id="v-list" class="stack"></div>'+
+     '<div class="card"><div class="between mb3"><div style="font-size:14px;font-weight:500">Access log</div>'+
+     '<button id="log-btn" class="btn-sm">Load</button></div>'+
+     '<div id="log-body"><div class="dim">Tap Load to fetch recent access events.</div></div></div>'+
+     '</div>'+
+     '<div class="dim mt8" style="text-align:center">Values masked by default. Every reveal is logged.</div>'+
+     '</div></div>';
+   el("v-lock").onclick=function(){state.token="";state.email="";state.secrets=null;renderLogin();};
+   el("v-refresh").onclick=loadSecrets;
+   el("add-btn").onclick=addSecret;
+   el("log-btn").onclick=loadLog;
+   el("sa-toggle").onclick=toggleServiceAccess;
+   loadServiceAccess();
+ }
+
+ function renderServiceAccess(enabled){
+   var btn=el("sa-toggle");var st=el("sa-state");if(!btn){return;}
+   btn.disabled=false;
+   if(enabled){
+     btn.textContent="Disable";btn.className="btn-sm btn-danger";
+     st.innerHTML='<span class="reveal">\u25cf ENABLED</span> <span class="dim">\u2014 service token reads allowed</span>';
+   }else{
+     btn.textContent="Enable";btn.className="btn-sm";
+     st.innerHTML='<span class="dim">\u25cb DISABLED \u2014 external reads blocked</span>';
+   }
+ }
+
+ function loadServiceAccess(){
+   callFn("get_service_access",{}).then(function(res){
+     if(res.ok&&res.data&&res.data.service_access_enabled!==undefined){
+       renderServiceAccess(res.data.service_access_enabled===true);
+     }else{
+       var st=el("sa-state");if(st){st.innerHTML='<span class="err">'+esc(errMsg(res))+'</span>';}
+     }
+   }).catch(function(){var st=el("sa-state");if(st){st.innerHTML='<span class="err">Network error.</span>';}});
+ }
+
+ function toggleServiceAccess(){
+   var btn=el("sa-toggle");var enabling=(btn.textContent==="Enable");
+   if(enabling){
+     if(!window.confirm("Enable service access? External services with a valid token will be able to read secrets.")){return;}
+   }
+   btn.disabled=true;btn.textContent="...";
+   callFn("set_service_access",{enabled:enabling}).then(function(res){
+     if(res.ok&&res.data){
+       renderServiceAccess(res.data.service_access_enabled===true);
+       toast(res.data.service_access_enabled?"Service access ENABLED.":"Service access DISABLED.","ok");
+     }else{btn.disabled=false;loadServiceAccess();toast(errMsg(res),"error");}
+   }).catch(function(){btn.disabled=false;loadServiceAccess();toast("Network error.","error");});
+ }
+
+ function renderList(){
+   var box=el("v-list");var count=el("v-count");if(!box){return;}
+   if(state.secrets===null){count.textContent="Loading...";box.innerHTML="";return;}
+   var n=state.secrets.length;count.textContent=n+" secret"+(n===1?"":"s");
+   if(n===0){box.innerHTML='<div class="empty">No secrets yet. Add one above.</div>';return;}
+   var gd=groupByProject(state.secrets);
+   var html="";var pi;
+   for(pi=0;pi<gd.order.length;pi++){
+     var proj=gd.order[pi];var items=gd.groups[proj];
+     html+='<div class="project-header"><span class="project-label">&#x1F4C1; '+esc(proj)+'</span></div>';
+     var i;
+     for(i=0;i<items.length;i++){
+       var item=items[i];var key=item.key_name;var desc=item.description||"";
+       var sid="sec-"+proj.replace(/[^a-z0-9]/gi,"_")+"-"+i;
+       html+='<div class="card hl">'+
+         '<div class="between">'+
+           '<div class="mono truncate" style="font-size:14px;font-weight:500">'+esc(key)+'</div>'+
+         '</div>'+
+         (desc?'<div class="dim mt2">'+esc(desc)+'</div>':'')+
+         '<div class="mono mt2 break" id="'+sid+'-val'+'"><span class="masked">'+dots(20)+'</span></div>'+
+         '<div class="row mt3">'+
+           '<button class="btn-sm" data-act="reveal" data-project="'+esc(proj)+'" data-key="'+esc(key)+'" data-sid="'+sid+'">Reveal</button>'+
+           '<button class="btn-sm hide" data-act="copy" data-sid="'+sid+'">Copy</button>'+
+           '<button class="btn-sm" data-act="rotate" data-project="'+esc(proj)+'" data-key="'+esc(key)+'" data-sid="'+sid+'">Rotate</button>'+
+           '<button class="btn-sm btn-danger" data-act="del" data-project="'+esc(proj)+'" data-key="'+esc(key)+'">Delete</button>'+
+         '</div>'+
+       '</div>';
+     }
+   }
+   box.innerHTML=html;
+   var btns=box.querySelectorAll("button[data-act]");var j;
+   for(j=0;j<btns.length;j++){
+    btns[j].onclick=onRowAction;
+   }
+ }
+
+ function onRowAction(e){
+   var btn=e.currentTarget;
+   var act=btn.getAttribute("data-act");
+   var project=btn.getAttribute("data-project");
+   var key=btn.getAttribute("data-key");
+   var sid=btn.getAttribute("data-sid");
+   if(act==="reveal"){revealSecret(project,key,sid,btn);}
+   else if(act==="copy"){copySecret(sid);}
+   else if(act==="rotate"){rotateSecret(project,key);}
+   else if(act==="del"){deleteSecret(project,key);}
+ }
+
+ function revealSecret(project,key,sid,btn){
+   var valBox=el(sid+"-val");var copyBtn=btn.parentNode.querySelector('button[data-act="copy"]');
+   if(btn.textContent==="Hide"){
+     valBox.innerHTML='<span class="masked">'+dots(20)+'</span>';
+     btn.textContent="Reveal";if(copyBtn){copyBtn.className="btn-sm hide";}return;
+   }
+   btn.disabled=true;btn.textContent="...";
+   callFn("get_secret",{project:project,key_name:key}).then(function(res){
+     btn.disabled=false;
+     if(res.ok&&res.data&&res.data.value!==undefined){
+       revealCache[sid]=res.data.value;
+       valBox.innerHTML='<span class="reveal">'+esc(res.data.value)+'</span>';
+       btn.textContent="Hide";if(copyBtn){copyBtn.className="btn-sm";}
+       toast("Revealed "+project+"/"+key+" (logged)","ok");
+     }else{btn.textContent="Reveal";toast(errMsg(res),"error");}
+   }).catch(function(){btn.disabled=false;btn.textContent="Reveal";toast("Network error.","error");});
+ }
+
+ function copySecret(sid){
+   var v=revealCache[sid];if(!v){return;}
+   if(navigator.clipboard){
+     navigator.clipboard.writeText(v).then(function(){toast("Copied to clipboard.","ok");}).catch(function(){toast("Copy failed.","error");});
+   }else{toast("Clipboard unavailable.","error");}
+ }
+
+ function rotateSecret(project,key){
+   var next=window.prompt("New value for "+project+"/"+key+":");
+   if(next===null){return;}if(next===""){toast("Empty value ignored.","error");return;}
+   callFn("rotate_secret",{project:project,key_name:key,value:next}).then(function(res){
+     if(res.ok){toast("Rotated "+project+"/"+key+".","ok");loadSecrets();}
+     else{toast(errMsg(res),"error");}
+   }).catch(function(){toast("Network error.","error");});
+ }
+
+ function deleteSecret(project,key){
+   if(!window.confirm("Delete "+project+"/"+key+"? This cannot be undone.")){return;}
+   callFn("delete_secret",{project:project,key_name:key}).then(function(res){
+     if(res.ok){toast("Deleted "+project+"/"+key+".","ok");loadSecrets();}
+     else{toast(errMsg(res),"error");}
+   }).catch(function(){toast("Network error.","error");});
+ }
+
+ function addSecret(){
+   var project=el("add-project").value.trim();
+   var name=el("add-name").value.trim();
+   var val=el("add-val").value;
+   var desc=el("add-desc").value.trim();
+   if(!project||!name||!val){toast("Project, key name, and value are required.","error");return;}
+   var btn=el("add-btn");btn.disabled=true;btn.textContent="Saving...";
+   var payload={project:project,key_name:name,value:val};
+   if(desc){payload.description=desc;}
+   callFn("set_secret",payload).then(function(res){
+     btn.disabled=false;btn.textContent="Save secret";
+     if(res.ok){toast("Saved "+project+"/"+name+".","ok");
+       el("add-project").value="";el("add-name").value="";el("add-val").value="";el("add-desc").value="";
+       loadSecrets();
+     }else{toast(errMsg(res),"error");}
+   }).catch(function(){btn.disabled=false;btn.textContent="Save secret";toast("Network error","error");});
+ }
+
+ function loadSecrets(){
+   state.secrets=null;renderList();
+   callFn("list_secret_names",{}).then(function(res){
+     if(res.ok&&res.data&&res.data.secrets){
+       state.secrets=res.data.secrets;
+       }else if(res.ok){
+       state.secrets=[];
+     }else{
+       state.secrets=[];toast(errMsg(res),"error");
+     }
+     renderList();
+   }).catch(function(){state.secrets=[];renderList();toast("Network error.","error");});
+ }
+
+ function loadLog(){
+   var body=el("log-body");var btn=el("log-btn");btn.disabled=true;btn.textContent="...";
+   callFn("get_log",{}).then(function(res){
+     btn.disabled=false;btn.textContent="Load";
+     if(!res.ok){toast(errMsg(res),"error");return;}
+     var rows=(res.data&&res.data.log)?res.data.log:[];
+     if(rows.length===0){body.innerHTML='<div class="dim">No events yet.</div>';return;}
+     var html='<div class="logbox stack">';var i;
+     for(i=0;i<rows.length;i++){
+       var r=rows[i];
+       var at=r.at||"";
+       var ac=r.action||"?";
+       var proj=r.project||"";
+       var kn=r.key_name||"";
+       html+='<div class="logline mono">'+
+         '<span class="dim">'+esc(at)+'</span>'+
+         '<span style="color:#60a5fa">'+esc(ac)+'</span>'+
+         '<span style="color:#a78bfa">'+esc(proj)+'</span>'+
+         '<span class="truncate" style="color:#d4d4d8">'+esc(kn)+'</span>'+
+       '</div>';
+     }
+     html+='</div>';body.innerHTML=html;
+   }).catch(function(){btn.disabled=false;btn.textContent="Load";toast("Network error.","error");});
+ }
+
+ function renderForgot(){
+  el("app").innerHTML=
+   '<div class="center"><div style="width:100%;max-width:360px">'+
+   '<div class="row mb6"><div class="logo">&#x1F512;</div>'+
+   '<div style="margin-left:10px"><div style="font-weight:600;font-size:18px;line-height:1">KeyVault</div>'+
+   '<div class="dim" style="margin-top:4px">Reset password</div></div></div>'+
+   '<div class="stack">'+
+   '<div><label>Owner email</label><input id="fp-email" type="email" autocomplete="username" placeholder="you@example.com"></div>'+
+   '<div id="fp-err" class="err hide"></div>'+
+   '<button id="fp-btn" class="btn" style="width:100%">Send reset link</button>'+
+   '<div style="text-align:center;margin-top:12px"><button id="fp-back" style="background:none;border:none;color:var(--blue-h);font-size:13px;cursor:pointer;text-decoration:underline">Back to login</button></div>'+
+   '</div></div></div>';
+  function doReset(){
+   var email=el("fp-email").value.trim();var errBox=el("fp-err");
+   if(!email){errBox.textContent="Email required.";errBox.className="err";return;}
+   var btn=el("fp-btn");btn.disabled=true;btn.textContent="Sending...";errBox.className="err hide";
+   fetch(AUTH_BASE+"/recover",{method:"POST",headers:{"Content-Type":"application/json","apikey":PUB_KEY},body:JSON.stringify({email:email,gotrue_meta_security:{}})}).then(function(r){
+    btn.disabled=false;btn.textContent="Send reset link";
+    if(r.ok||r.status===200){
+     el("app").innerHTML='<div class="center"><div style="width:100%;max-width:360px;text-align:center">'+
+      '<div class="logo" style="margin:0 auto 16px">&#x1F512;</div>'+
+      '<div style="font-size:16px;font-weight:600;margin-bottom:8px">Check your email</div>'+
+      '<div class="dim">Reset link sent to '+esc(email)+'. Click the link to set a new password.</div>'+
+      '<button id="back-li" style="margin-top:24px;background:none;border:none;color:var(--blue-h);font-size:13px;cursor:pointer;text-decoration:underline">Back to login</button>'+
+      '</div></div>';
+     el("back-li").onclick=renderLogin;
+    }else{
+     return r.json().then(function(d){errBox.textContent=d.error_description||d.msg||"Request failed.";errBox.className="err";});
+    }
+   }).catch(function(){btn.disabled=false;btn.textContent="Send reset link";errBox.textContent="Network error.";errBox.className="err";});
+  }
+  el("fp-btn").onclick=doReset;
+  el("fp-back").onclick=renderLogin;
+  el("fp-email").onkeydown=function(e){if(e.key==="Enter"){doReset();}};
+ }
+
+ function renderResetPassword(token){
+  el("app").innerHTML=
+   '<div class="center"><div style="width:100%;max-width:360px">'+
+   '<div class="row mb6"><div class="logo">&#x1F512;</div>'+
+   '<div style="margin-left:10px"><div style="font-weight:600;font-size:18px;line-height:1">KeyVault</div>'+
+   '<div class="dim" style="margin-top:4px">Set new password</div></div></div>'+
+   '<div class="stack">'+
+   '<div><label>New password</label><input id="rp-pass" type="password" autocomplete="new-password" placeholder="min 8 characters"></div>'+
+   '<div id="rp-err" class="err hide"></div>'+
+   '<button id="rp-btn" class="btn" style="width:100%">Set new password</button>'+
+   '</div></div></div>';
+  function doSet(){
+   var pass=el("rp-pass").value;var errBox=el("rp-err");
+   if(!pass||pass.length<8){errBox.textContent="Password must be at least 8 characters.";errBox.className="err";return;}
+   var btn=el("rp-btn");btn.disabled=true;btn.textContent="Saving...";errBox.className="err hide";
+   fetch(AUTH_BASE+"/user",{method:"PUT",headers:{"Content-Type":"application/json","apikey":PUB_KEY,"Authorization":"Bearer "+token},body:JSON.stringify({password:pass})}).then(function(r){
+    btn.disabled=false;btn.textContent="Set new password";
+    if(r.ok){window.location.hash="";toast("Password updated. Please log in.","ok");renderLogin();}
+    else{return r.json().then(function(d){errBox.textContent=d.error_description||d.msg||"Failed to update.";errBox.className="err";});}
+   }).catch(function(){btn.disabled=false;btn.textContent="Set new password";errBox.textContent="Network error.";errBox.className="err";});
+  }
+  el("rp-btn").onclick=doSet;
+  el("rp-pass").onkeydown=function(e){if(e.key==="Enter"){doSet();}};
+ }
+
+ function checkHashToken(){
+  var hash=window.location.hash;if(!hash){return false;}
+  var params={};var parts=hash.replace(/^#/,"").split("&");var i;
+  for(i=0;i<parts.length;i++){var kv=parts[i].split("=");if(kv.length===2){params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]);}}
+  if(params.access_token&&params.type==="recovery"){renderResetPassword(params.access_token);return true;}
+  return false;
+ }
+
+ if(!checkHashToken()){renderLogin();}
+})();
+</script>
+</body>
+</html>
