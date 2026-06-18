@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YTFactory - Fire e2e</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: #0b0e14; color: #e6e6e6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 32px 20px; gap: 20px;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin: 8px 0 0; letter-spacing: 0.3px; }
+  .sub { font-size: 13px; color: #8a92a6; text-align: center; line-height: 1.5; }
+  .card {
+    width: 100%; max-width: 440px; background: #141925;
+    border: 1px solid #232a3a; border-radius: 16px; padding: 18px;
+  }
+  .field {
+    width: 100%; background: #0b0e14; border: 1px solid #232a3a;
+    border-radius: 10px; padding: 12px; color: #e6e6e6; font-size: 13px;
+    font-family: ui-monospace, Menlo, monospace; margin-top: 6px;
+  }
+  label { font-size: 12px; color: #8a92a6; }
+  button {
+    width: 100%; max-width: 440px; border: none; border-radius: 16px;
+    padding: 18px; font-size: 17px; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, #f0b429, #d49b1e); color: #1a1205;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .out {
+    width: 100%; max-width: 440px; background: #0b0e14;
+    border: 1px solid #232a3a; border-radius: 12px; padding: 16px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+    white-space: pre-wrap; word-break: break-word; min-height: 60px;
+    line-height: 1.5;
+  }
+  .ok { color: #4ade80; }
+  .err { color: #f87171; }
+  .pending { color: #f0b429; }
+</style>
+</head>
+<body>
+  <h1>YTFactory - Fire e2e</h1>
+  <p class="sub">POSTs to ytf-tts and kicks the full chain:<br>script_gen to tts to render to done</p>
+
+  <div class="card">
+    <label>Endpoint</label>
+    <input class="field" id="url" value="https://jmtcdegcsrxjenxjnxse.supabase.co/functions/v1/ytf-tts">
+    <label style="margin-top:12px; display:block;">job_id</label>
+    <input class="field" id="job" value="683776be-f004-478c-b202-a8df8e49a506">
+  </div>
+
+  <button id="fire" onclick="fire()">Fire ytf-tts</button>
+
+  <div class="out" id="out">Tap the button to fire. Response shows here.</div>
+
+  <script>
+  function fire() {
+    var btn = document.getElementById("fire");
+    var out = document.getElementById("out");
+    var url = document.getElementById("url").value.trim();
+    var job = document.getElementById("job").value.trim();
+    if (!job) { out.className = "out err"; out.textContent = "job_id is empty"; return; }
+    btn.disabled = true;
+    out.className = "out pending";
+    out.textContent = "Firing...";
+    var started = Date.now();
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: job })
+    })
+    .then(function (res) {
+      return res.text().then(function (txt) {
+        var elapsed = ((Date.now() - started) / 1000).toFixed(1);
+        var parsed;
+        try { parsed = JSON.parse(txt); } catch (e) { parsed = null; }
+        var pretty = parsed ? JSON.stringify(parsed, null, 2) : txt;
+        var good = parsed && parsed.ok === true;
+        out.className = good ? "out ok" : "out err";
+        out.textContent = "HTTP " + res.status + "  (" + elapsed + "s)\n\n" + pretty +
+          (good ? "\n\nChain fired. Tell Claude: check" : "");
+        btn.disabled = false;
+      });
+    })
+    .catch(function (e) {
+      out.className = "out err";
+      out.textContent = "Request failed:\n" + String(e) +
+        "\n\nIf this says CORS or Load failed, tell Claude.";
+      btn.disabled = false;
+    });
+  }
+  </script>
+</body>
+</html>
