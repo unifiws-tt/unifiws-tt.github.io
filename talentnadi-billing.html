@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TalentNadi — Beli Kredit</title>
+<style>
+  :root{
+    --navy:#1E2A52; --coral:#FF6B5E; --bg:#F4F6FB; --card:#FFFFFF;
+    --line:#E2E6F0; --muted:#6B7280; --ok:#10B981;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--navy);
+    min-height:100vh; padding:20px 16px 48px;
+  }
+  .wrap{max-width:430px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:10px;margin:8px 0 22px}
+  .dot{width:34px;height:34px;border-radius:10px;background:var(--navy);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px}
+  .brand h1{font-size:19px;font-weight:800;letter-spacing:-.3px}
+  .brand span{color:var(--coral)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:20px;margin-bottom:14px}
+  h2{font-size:16px;font-weight:700;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);
+    margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+  input{width:100%;padding:13px 14px;font-size:16px;border:1px solid var(--line);
+    border-radius:11px;background:#fff;color:var(--navy);font-family:inherit;outline:none}
+  input:focus{border-color:var(--coral)}
+  .btn{width:100%;padding:14px;font-size:15px;font-weight:700;border:none;
+    border-radius:11px;cursor:pointer;font-family:inherit;margin-top:14px;
+    transition:opacity .15s}
+  .btn:active{opacity:.85}
+  .btn-primary{background:var(--coral);color:#fff}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .ghost{background:none;border:none;color:var(--muted);font-size:13px;
+    text-decoration:underline;cursor:pointer;margin-top:14px;font-family:inherit;
+    display:block;width:100%;text-align:center;padding:6px}
+  .plan{border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:12px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .plan.hl{border-color:var(--coral);border-width:2px}
+  .plan .info{flex:1}
+  .plan .name{font-size:15px;font-weight:700}
+  .plan .meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .plan .price{font-size:17px;font-weight:800;white-space:nowrap}
+  .plan .price small{font-size:11px;font-weight:600;color:var(--muted);display:block;text-align:right}
+  .badge{display:inline-block;background:#FFE9E6;color:var(--coral);font-size:10px;
+    font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:6px;text-transform:uppercase}
+  .pbtn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:10px 16px;
+    font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .pbtn:active{opacity:.85}
+  .pbtn:disabled{opacity:.5}
+  .who{font-size:12px;color:var(--muted);margin-bottom:16px;display:flex;
+    justify-content:space-between;align-items:center;gap:8px}
+  .who b{color:var(--navy)}
+  .msg{font-size:13px;padding:11px 13px;border-radius:10px;margin-top:14px;line-height:1.45;display:none}
+  .msg.err{background:#FEECEC;color:#B42318;display:block}
+  .msg.ok{background:#E7F7F0;color:#067647;display:block}
+  .hide{display:none}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:24px;line-height:1.6}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="dot">T</div>
+    <h1>Talent<span>Nadi</span></h1>
+  </div>
+
+  <!-- LOGIN: email step -->
+  <div id="step-email" class="card">
+    <h2>Log masuk</h2>
+    <p class="sub">Masukkan email anda. Kami hantar kod 6-digit untuk pengesahan — tiada password diperlukan.</p>
+    <label for="email">Email</label>
+    <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="nama@syarikat.com">
+    <button id="send-btn" class="btn btn-navy" onclick="sendCode()">Hantar Kod</button>
+    <div id="msg-email" class="msg"></div>
+  </div>
+
+  <!-- LOGIN: code step -->
+  <div id="step-code" class="card hide">
+    <h2>Masukkan Kod</h2>
+    <p class="sub">Kod 6-digit dihantar ke <b id="email-echo"></b>. Semak inbox / spam.</p>
+    <label for="code">Kod Pengesahan</label>
+    <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+    <button id="verify-btn" class="btn btn-primary" onclick="verifyCode()">Sahkan &amp; Log Masuk</button>
+    <button class="ghost" onclick="backToEmail()">Tukar email</button>
+    <div id="msg-code" class="msg"></div>
+  </div>
+
+  <!-- PLANS (after login) -->
+  <div id="step-plans" class="hide">
+    <div class="card">
+      <div class="who">
+        <span>Log masuk sebagai <b id="who-email"></b></span>
+        <button class="ghost" style="width:auto;margin:0;padding:0" onclick="logout()">Log keluar</button>
+      </div>
+      <h2>Pilih Pelan</h2>
+      <p class="sub">Bayar sekali, guna kredit untuk assessment calon. Harga dalam Ringgit (MYR).</p>
+
+      <div class="plan">
+        <div class="info">
+          <div class="name">Bayar Ikut Guna</div>
+          <div class="meta">1 kredit assessment · sesuai untuk cuba</div>
+        </div>
+        <div class="price">RM39.90<small>sekali</small></div>
+      </div>
+      <button id="buy-payg" class="btn btn-navy" style="margin-top:0" onclick="buy('payg', this)">Beli — RM39.90</button>
+
+      <div style="height:18px"></div>
+
+      <div class="plan hl">
+        <div class="info">
+          <span class="badge">Jimat</span>
+          <div class="name">Bundle 20</div>
+          <div class="meta">20 kredit assessment · RM24.95/kredit</div>
+        </div>
+        <div class="price">RM499<small>sekali</small></div>
+      </div>
+      <button id="buy-bundle" class="btn btn-primary" style="margin-top:0" onclick="buy('bundle', this)">Beli Bundle — RM499</button>
+
+      <div style="height:18px"></div>
+
+      <div class="plan">
+        <div class="info">
+          <div class="name">Unlimited Setahun</div>
+          <div class="meta">Assessment tanpa had · 12 bulan</div>
+        </div>
+        <div class="price">RM999<small>/tahun</small></div>
+      </div>
+      <button id="buy-unlimited" class="btn btn-navy" style="margin-top:0" onclick="buy('unlimited', this)">Beli Unlimited — RM999</button>
+
+      <div id="msg-plans" class="msg"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Pembayaran selamat dikendalikan oleh Stripe.<br>
+    TalentNadi · AI hiring assessment untuk boss Malaysia.
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SB_URL = "https://jmtcdegcsrxjenxjnxse.supabase.co";
+  var SB_KEY = "sb_publishable_ufUjg7d8sbcyFCZUv1JvCg_0hAuhzm3";
+  var FN_CHECKOUT = SB_URL + "/functions/v1/tnadi-stripe-checkout";
+
+  var sb = null;
+  var pendingEmail = "";
+
+  function el(id){ return document.getElementById(id); }
+
+  function showMsg(id, text, kind){
+    var m = el(id);
+    m.textContent = text;
+    m.className = "msg " + kind;
+  }
+  function clearMsg(id){
+    var m = el(id);
+    m.textContent = "";
+    m.className = "msg";
+  }
+
+  function setLoading(btn, on, label){
+    if(on){
+      btn.disabled = true;
+      btn.dataset.orig = btn.innerHTML;
+      btn.innerHTML = "<span class='spin'></span>" + (label || "Sebentar...");
+    } else {
+      btn.disabled = false;
+      if(btn.dataset.orig){ btn.innerHTML = btn.dataset.orig; }
+    }
+  }
+
+  function initSb(){
+    if(!window.supabase){
+      showMsg("msg-email", "Gagal muat Supabase. Cuba refresh halaman.", "err");
+      return false;
+    }
+    if(!sb){
+      sb = window.supabase.createClient(SB_URL, SB_KEY);
+    }
+    return true;
+  }
+
+  function sendCode(){
+    if(!initSb()){ return; }
+    clearMsg("msg-email");
+    var email = el("email").value.trim();
+    if(email.indexOf("@") < 1 || email.indexOf(".") < 0){
+      showMsg("msg-email", "Sila masukkan email yang sah.", "err");
+      return;
+    }
+    var btn = el("send-btn");
+    setLoading(btn, true, "Menghantar...");
+    sb.auth.signInWithOtp({
+      email: email,
+      options: { shouldCreateUser: true }
+    }).then(function(res){
+      setLoading(btn, false);
+      if(res.error){
+        showMsg("msg-email", "Ralat: " + res.error.message, "err");
+        return;
+      }
+      pendingEmail = email;
+      el("email-echo").textContent = email;
+      el("step-email").classList.add("hide");
+      el("step-code").classList.remove("hide");
+      el("code").focus();
+    }).catch(function(e){
+      setLoading(btn, false);
+      showMsg("msg-email", "Ralat rangkaian. Cuba lagi.", "err");
+    });
+  }
+
+  function verifyCode(){
+    if(!initSb()){ return; }
+    clearMsg("msg-code");
+    var code = el("code").value.trim();
+    if(code.length < 6){
+      showMsg("msg-code", "Kod mesti 6 digit.", "err");
+      return;
+    }
+    var btn = el("verify-btn");
+    setLoading(btn, true, "Mengesahkan...");
+    sb.auth.verifyOtp({
+      email: pendingEmail,
+      token: code,
+      type: "email"
+    }).then(function(res){
+      setLoading(btn, false);
+      if(res.error){
+        showMsg("msg-code", "Kod salah / tamat tempoh: " + res.error.message, "err");
+        return;
+      }
+      enterPlans();
+    }).catch(function(e){
+      setLoading(btn, false);
+      showMsg("msg-code", "Ralat rangkaian. Cuba lagi.", "err");
+    });
+  }
+
+  function backToEmail(){
+    clearMsg("msg-code");
+    el("code").value = "";
+    el("step-code").classList.add("hide");
+    el("step-email").classList.remove("hide");
+  }
+
+  function enterPlans(){
+    sb.auth.getUser().then(function(res){
+      var email = pendingEmail;
+      if(res.data && res.data.user && res.data.user.email){
+        email = res.data.user.email;
+      }
+      el("who-email").textContent = email;
+      el("step-email").classList.add("hide");
+      el("step-code").classList.add("hide");
+      el("step-plans").classList.remove("hide");
+    });
+  }
+
+  function logout(){
+    if(!sb){ return; }
+    sb.auth.signOut().then(function(){
+      el("step-plans").classList.add("hide");
+      el("step-code").classList.add("hide");
+      el("email").value = "";
+      el("code").value = "";
+      clearMsg("msg-email");
+      el("step-email").classList.remove("hide");
+    });
+  }
+
+  function buy(kind, btn){
+    if(!initSb()){ return; }
+    clearMsg("msg-plans");
+    setLoading(btn, true, "Membuka pembayaran...");
+    sb.auth.getSession().then(function(res){
+      var session = res.data ? res.data.session : null;
+      if(!session || !session.access_token){
+        setLoading(btn, false);
+        showMsg("msg-plans", "Sesi tamat. Sila log masuk semula.", "err");
+        return;
+      }
+      fetch(FN_CHECKOUT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + session.access_token
+        },
+        body: JSON.stringify({ kind: kind })
+      }).then(function(r){
+        return r.json().then(function(data){ return { ok: r.ok, data: data }; });
+      }).then(function(out){
+        setLoading(btn, false);
+        if(out.ok && out.data && out.data.url){
+          window.location.href = out.data.url;
+        } else {
+          var em = (out.data && out.data.error) ? out.data.error : "Gagal mula pembayaran.";
+          showMsg("msg-plans", "Ralat: " + em, "err");
+        }
+      }).catch(function(e){
+        setLoading(btn, false);
+        showMsg("msg-plans", "Ralat rangkaian semasa checkout.", "err");
+      });
+    });
+  }
+
+  // Auto-resume existing session on load
+  window.addEventListener("load", function(){
+    if(!initSb()){ return; }
+    sb.auth.getSession().then(function(res){
+      var session = res.data ? res.data.session : null;
+      if(session && session.user){
+        pendingEmail = session.user.email || "";
+        enterPlans();
+      }
+    });
+  });
+</script>
+</body>
+</html>
