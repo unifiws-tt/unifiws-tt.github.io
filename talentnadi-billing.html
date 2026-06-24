@@ -50,10 +50,6 @@
   .plan .price small{font-size:11px;font-weight:600;color:var(--muted);display:block;text-align:right}
   .badge{display:inline-block;background:#FFE9E6;color:var(--coral);font-size:10px;
     font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:6px;text-transform:uppercase}
-  .pbtn{background:var(--navy);color:#fff;border:none;border-radius:9px;padding:10px 16px;
-    font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
-  .pbtn:active{opacity:.85}
-  .pbtn:disabled{opacity:.5}
   .who{font-size:12px;color:var(--muted);margin-bottom:16px;display:flex;
     justify-content:space-between;align-items:center;gap:8px}
   .who b{color:var(--navy)}
@@ -61,10 +57,14 @@
   .msg.err{background:#FEECEC;color:#B42318;display:block}
   .msg.ok{background:#E7F7F0;color:#067647;display:block}
   .hide{display:none}
+  .center{text-align:center}
+  .bigmail{font-size:40px;margin-bottom:8px}
   .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:24px;line-height:1.6}
   .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);
     border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  .spin.dark{border:2px solid rgba(30,42,82,.2);border-top-color:var(--navy)}
   @keyframes sp{to{transform:rotate(360deg)}}
+  .boot{text-align:center;padding:40px 0;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -75,25 +75,29 @@
     <h1>Talent<span>Nadi</span></h1>
   </div>
 
+  <!-- BOOT: checking session on return -->
+  <div id="step-boot" class="card">
+    <div class="boot"><span class="spin dark"></span> Memuatkan...</div>
+  </div>
+
   <!-- LOGIN: email step -->
-  <div id="step-email" class="card">
+  <div id="step-email" class="card hide">
     <h2>Log masuk</h2>
-    <p class="sub">Masukkan email anda. Kami hantar kod 6-digit untuk pengesahan — tiada password diperlukan.</p>
+    <p class="sub">Masukkan email anda. Kami hantar pautan log masuk — klik pautan tu untuk teruskan. Tiada password diperlukan.</p>
     <label for="email">Email</label>
     <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="nama@syarikat.com">
-    <button id="send-btn" class="btn btn-navy" onclick="sendCode()">Hantar Kod</button>
+    <button id="send-btn" class="btn btn-navy" onclick="sendLink()">Hantar Pautan Log Masuk</button>
     <div id="msg-email" class="msg"></div>
   </div>
 
-  <!-- LOGIN: code step -->
-  <div id="step-code" class="card hide">
-    <h2>Masukkan Kod</h2>
-    <p class="sub">Kod 6-digit dihantar ke <b id="email-echo"></b>. Semak inbox / spam.</p>
-    <label for="code">Kod Pengesahan</label>
-    <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
-    <button id="verify-btn" class="btn btn-primary" onclick="verifyCode()">Sahkan &amp; Log Masuk</button>
-    <button class="ghost" onclick="backToEmail()">Tukar email</button>
-    <div id="msg-code" class="msg"></div>
+  <!-- SENT: waiting for click -->
+  <div id="step-sent" class="card hide">
+    <div class="center">
+      <div class="bigmail">📧</div>
+      <h2>Semak Email Anda</h2>
+      <p class="sub">Pautan log masuk dihantar ke <b id="email-echo"></b>.<br>Buka email, klik pautan — anda akan dibawa balik ke sini secara automatik. Semak folder spam kalau tak nampak.</p>
+      <button class="ghost" onclick="backToEmail()">Guna email lain</button>
+    </div>
   </div>
 
   <!-- PLANS (after login) -->
@@ -154,11 +158,19 @@
   var SB_URL = "https://jmtcdegcsrxjenxjnxse.supabase.co";
   var SB_KEY = "sb_publishable_ufUjg7d8sbcyFCZUv1JvCg_0hAuhzm3";
   var FN_CHECKOUT = SB_URL + "/functions/v1/tnadi-stripe-checkout";
+  var REDIRECT_TO = "https://unifiws-tt.github.io/talentnadi-billing.html";
 
   var sb = null;
-  var pendingEmail = "";
 
   function el(id){ return document.getElementById(id); }
+
+  function show(id){
+    var ids = ["step-boot","step-email","step-sent","step-plans"];
+    for(var i=0;i<ids.length;i++){
+      if(ids[i] === id){ el(ids[i]).classList.remove("hide"); }
+      else { el(ids[i]).classList.add("hide"); }
+    }
+  }
 
   function showMsg(id, text, kind){
     var m = el(id);
@@ -184,16 +196,19 @@
 
   function initSb(){
     if(!window.supabase){
+      show("step-email");
       showMsg("msg-email", "Gagal muat Supabase. Cuba refresh halaman.", "err");
       return false;
     }
     if(!sb){
-      sb = window.supabase.createClient(SB_URL, SB_KEY);
+      sb = window.supabase.createClient(SB_URL, SB_KEY, {
+        auth: { detectSessionInUrl: true, flowType: "implicit", persistSession: true }
+      });
     }
     return true;
   }
 
-  function sendCode(){
+  function sendLink(){
     if(!initSb()){ return; }
     clearMsg("msg-email");
     var email = el("email").value.trim();
@@ -205,80 +220,41 @@
     setLoading(btn, true, "Menghantar...");
     sb.auth.signInWithOtp({
       email: email,
-      options: { shouldCreateUser: true }
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: REDIRECT_TO
+      }
     }).then(function(res){
       setLoading(btn, false);
       if(res.error){
         showMsg("msg-email", "Ralat: " + res.error.message, "err");
         return;
       }
-      pendingEmail = email;
       el("email-echo").textContent = email;
-      el("step-email").classList.add("hide");
-      el("step-code").classList.remove("hide");
-      el("code").focus();
+      show("step-sent");
     }).catch(function(e){
       setLoading(btn, false);
       showMsg("msg-email", "Ralat rangkaian. Cuba lagi.", "err");
     });
   }
 
-  function verifyCode(){
-    if(!initSb()){ return; }
-    clearMsg("msg-code");
-    var code = el("code").value.trim();
-    if(code.length < 6){
-      showMsg("msg-code", "Kod mesti 6 digit.", "err");
-      return;
-    }
-    var btn = el("verify-btn");
-    setLoading(btn, true, "Mengesahkan...");
-    sb.auth.verifyOtp({
-      email: pendingEmail,
-      token: code,
-      type: "email"
-    }).then(function(res){
-      setLoading(btn, false);
-      if(res.error){
-        showMsg("msg-code", "Kod salah / tamat tempoh: " + res.error.message, "err");
-        return;
-      }
-      enterPlans();
-    }).catch(function(e){
-      setLoading(btn, false);
-      showMsg("msg-code", "Ralat rangkaian. Cuba lagi.", "err");
-    });
-  }
-
   function backToEmail(){
-    clearMsg("msg-code");
-    el("code").value = "";
-    el("step-code").classList.add("hide");
-    el("step-email").classList.remove("hide");
+    clearMsg("msg-email");
+    show("step-email");
   }
 
-  function enterPlans(){
-    sb.auth.getUser().then(function(res){
-      var email = pendingEmail;
-      if(res.data && res.data.user && res.data.user.email){
-        email = res.data.user.email;
-      }
-      el("who-email").textContent = email;
-      el("step-email").classList.add("hide");
-      el("step-code").classList.add("hide");
-      el("step-plans").classList.remove("hide");
-    });
+  function enterPlans(user){
+    var email = (user && user.email) ? user.email : "";
+    el("who-email").textContent = email;
+    show("step-plans");
   }
 
   function logout(){
     if(!sb){ return; }
     sb.auth.signOut().then(function(){
-      el("step-plans").classList.add("hide");
-      el("step-code").classList.add("hide");
       el("email").value = "";
-      el("code").value = "";
       clearMsg("msg-email");
-      el("step-email").classList.remove("hide");
+      show("step-email");
     });
   }
 
@@ -317,15 +293,25 @@
     });
   }
 
-  // Auto-resume existing session on load
+  // On load: handle magic-link return + resume existing session
   window.addEventListener("load", function(){
     if(!initSb()){ return; }
+    // detectSessionInUrl parses the token from URL hash asynchronously.
+    // onAuthStateChange fires SIGNED_IN once the session is established.
+    sb.auth.onAuthStateChange(function(event, session){
+      if(session && session.user){
+        enterPlans(session.user);
+      }
+    });
     sb.auth.getSession().then(function(res){
       var session = res.data ? res.data.session : null;
       if(session && session.user){
-        pendingEmail = session.user.email || "";
-        enterPlans();
+        enterPlans(session.user);
+      } else {
+        show("step-email");
       }
+    }).catch(function(e){
+      show("step-email");
     });
   });
 </script>
