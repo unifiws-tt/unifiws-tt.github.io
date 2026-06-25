@@ -12,7 +12,7 @@
   input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; box-sizing: border-box; }
   button { width: 100%; padding: 10px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
   button:disabled { opacity: 0.4; }
-  .result { margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 13px; }
+  .result { margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 13px; word-break: break-all; }
   .ok { background: #e6f4ea; color: #1a7a3a; }
   .err { background: #fdecea; color: #c0392b; }
 </style>
@@ -21,19 +21,19 @@
 <h2>YTF — Set Password</h2>
 <div class="sub">Target: unifiws@gmail.com (REAL, agency)</div>
 <label>Internal Secret</label>
-<input type="password" id="secret" placeholder="YTF_INTERNAL_SECRET" />
+<input type="text" id="secret" placeholder="YTF_INTERNAL_SECRET" autocapitalize="off" autocorrect="off" spellcheck="false" />
 <label>User ID</label>
-<input type="text" id="uid" value="0ed0cb3d-4f04-4928-875d-6ed3ad4ae972" />
+<input type="text" id="uid" value="0ed0cb3d-4f04-4928-875d-6ed3ad4ae972" autocapitalize="off" autocorrect="off" spellcheck="false" />
 <label>New Password</label>
-<input type="text" id="pw" value="Ytf2026!" />
+<input type="text" id="pw" value="Ytf2026!" autocapitalize="off" autocorrect="off" spellcheck="false" />
 <button id="btn" onclick="run()">Set Password</button>
 <div id="result"></div>
 <script>
 async function run() {
   var btn = document.getElementById('btn');
   var res = document.getElementById('result');
-  var secret = document.getElementById('secret').value;
-  var uid = document.getElementById('uid').value;
+  var secret = document.getElementById('secret').value.trim();
+  var uid = document.getElementById('uid').value.trim();
   var pw = document.getElementById('pw').value;
   if (!secret || !uid || !pw) { res.className = 'result err'; res.textContent = 'Fill all fields'; return; }
   btn.disabled = true;
@@ -47,7 +47,7 @@ async function run() {
     });
     var j = await r.json();
     if (j.ok) { res.className = 'result ok'; res.textContent = 'Done! Password set for ' + j.email; }
-    else { res.className = 'result err'; res.textContent = 'Error: ' + (j.error || 'unknown'); }
+    else { res.className = 'result err'; res.textContent = 'Status ' + r.status + ' — ' + JSON.stringify(j) + ' (typed len=' + secret.length + ')'; }
   } catch(e) {
     res.className = 'result err'; res.textContent = 'Fetch failed: ' + e.message;
   }
