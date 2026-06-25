@@ -6,7 +6,8 @@
 <title>YTF Admin Tools</title>
 <style>
   body { font-family: system-ui; max-width: 420px; margin: 40px auto; padding: 16px; background: #f9f9f9; }
-  h2 { font-size: 16px; margin-bottom: 16px; }
+  h2 { font-size: 16px; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: #888; margin-bottom: 16px; }
   label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
   input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; box-sizing: border-box; }
   button { width: 100%; padding: 10px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
@@ -18,10 +19,11 @@
 </head>
 <body>
 <h2>YTF — Set Password</h2>
+<div class="sub">Target: unifiws@gmail.com (REAL, agency)</div>
 <label>Internal Secret</label>
 <input type="password" id="secret" placeholder="YTF_INTERNAL_SECRET" />
 <label>User ID</label>
-<input type="text" id="uid" value="8172e238-a944-4069-b5b8-471c2a99cf36" />
+<input type="text" id="uid" value="0ed0cb3d-4f04-4928-875d-6ed3ad4ae972" />
 <label>New Password</label>
 <input type="text" id="pw" value="Ytf2026!" />
 <button id="btn" onclick="run()">Set Password</button>
