@@ -3,65 +3,56 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Viraly — Dashboard</title>
+<title>Viraly</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{
-    --bg:#0d0a14; --bg2:#15101f; --card:#1b1428; --line:#2c2140;
-    --violet:#8b5cf6; --pink:#ec4899; --txt:#f2eefb; --mut:#9a8fb5;
-    --grad:linear-gradient(120deg,#8b5cf6 0%,#ec4899 100%);
-  }
+  :root{--bg:#0d0a14;--bg2:#15101f;--card:#1b1428;--line:#2c2140;--violet:#8b5cf6;--pink:#ec4899;--txt:#f2eefb;--mut:#9a8fb5;--grad:linear-gradient(120deg,#8b5cf6,#ec4899)}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:
-    radial-gradient(1200px 600px at 80% -10%,rgba(236,72,153,.12),transparent),
-    radial-gradient(1000px 500px at -10% 10%,rgba(139,92,246,.14),transparent),var(--bg);
-    color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,rgba(236,72,153,.12),transparent),radial-gradient(1000px 500px at -10% 10%,rgba(139,92,246,.14),transparent),var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
   .wrap{max-width:960px;margin:0 auto;padding:20px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:-.5px}
-  .dot{width:30px;height:30px;border-radius:9px;background:var(--grad);display:inline-block;
-    box-shadow:0 6px 20px rgba(236,72,153,.35)}
+  .dot{width:30px;height:30px;border-radius:9px;background:var(--grad);box-shadow:0 6px 20px rgba(236,72,153,.35)}
   .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .btn{font-family:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 18px;
-    background:var(--grad);color:#fff;cursor:pointer;font-size:15px;width:100%;
-    box-shadow:0 8px 24px rgba(139,92,246,.28);transition:transform .12s,opacity .2s}
-  .btn:hover{transform:translateY(-1px)} .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .btn{font-family:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 18px;background:var(--grad);color:#fff;cursor:pointer;font-size:15px;width:100%;box-shadow:0 8px 24px rgba(139,92,246,.28);transition:transform .12s,opacity .2s}
+  .btn:hover{transform:translateY(-1px)} .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
   .btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--txt)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
-  input{width:100%;font-family:inherit;font-size:15px;color:var(--txt);background:var(--bg2);
-    border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-top:8px}
-  input:focus{outline:0;border-color:var(--violet)}
-  label{font-size:13px;color:var(--mut);font-weight:600}
-  .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-  .auth .card{width:100%;max-width:400px}
+  .btn.sm{width:auto;padding:9px 14px;font-size:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:14px}
+  input,textarea,select{width:100%;font-family:inherit;font-size:15px;color:var(--txt);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-top:8px}
+  input:focus,textarea:focus,select:focus{outline:0;border-color:var(--violet)}
+  textarea{resize:vertical;min-height:74px} label{font-size:13px;color:var(--mut);font-weight:600}
+  .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.auth .card{width:100%;max-width:400px;margin:0}
   .tabs{display:flex;gap:6px;background:var(--bg2);border-radius:12px;padding:5px;margin:18px 0}
-  .tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:600;font-size:14px;
-    color:var(--mut);cursor:pointer}
-  .tab.on{background:var(--card);color:var(--txt)}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:600;font-size:14px;color:var(--mut);cursor:pointer}.tab.on{background:var(--card);color:var(--txt)}
   .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:10px;display:none}
   .msg.err{display:block;background:rgba(236,72,153,.12);color:#ffb4d4;border:1px solid rgba(236,72,153,.3)}
   .msg.ok{display:block;background:rgba(139,92,246,.12);color:#cdbcff;border:1px solid rgba(139,92,246,.3)}
   header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
-  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);
-    background:var(--bg2);color:var(--mut)}
+  .chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--mut)}
   .badge.plan{background:var(--grad);color:#fff;border:0}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-  @media(max-width:640px){.grid{grid-template-columns:1fr}}
-  .stat .n{font-size:30px;font-weight:800;margin-top:4px}
-  .stat .l{font-size:13px;color:var(--mut);font-weight:600}
-  .vid{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
-  .vid:last-child{border-bottom:0}
-  .vid .t{font-weight:600;font-size:15px} .vid .s{font-size:12px;color:var(--mut)}
+  .badge.tt.on{color:#6ee7b7;border-color:rgba(52,211,153,.4)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .stat .n{font-size:30px;font-weight:800;margin-top:4px}.stat .l{font-size:13px;color:var(--mut);font-weight:600}
+  .h{font-weight:700;font-size:17px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:560px){.row2{grid-template-columns:1fr}}
+  .vid{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}.vid:last-child{border-bottom:0}
+  .vid .t{font-weight:600;font-size:15px}.vid .s{font-size:12px;color:var(--mut)}
   .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
   .pill.queued{background:rgba(154,143,181,.15);color:var(--mut)}
   .pill.rendering{background:rgba(139,92,246,.16);color:#cdbcff}
   .pill.done,.pill.posted{background:rgba(52,211,153,.14);color:#6ee7b7}
-  .empty{text-align:center;color:var(--mut);padding:34px 10px;font-size:14px}
-  .muted{color:var(--mut);font-size:13px}
-  .hide{display:none!important}
-  .sk{height:14px;border-radius:7px;background:linear-gradient(90deg,#241a35,#2c2140,#241a35);
-    background-size:200% 100%;animation:sh 1.2s infinite}
-  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .pill.failed{background:rgba(236,72,153,.14);color:#ffb4d4}
+  .empty{text-align:center;color:var(--mut);padding:30px 10px;font-size:14px}
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}@media(max-width:560px){.plans{grid-template-columns:1fr}}
+  .plan{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg2)}
+  .plan.pro{border-color:rgba(236,72,153,.4)}
+  .plan .pn{font-weight:800;font-size:16px} .plan .pp{font-size:13px;color:var(--mut);margin:4px 0 12px}
+  .muted{color:var(--mut);font-size:13px} .hide{display:none!important}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-size:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;z-index:9}
+  .toast.show{display:block}
+  .lk{color:#cdbcff;font-size:13px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -69,19 +60,10 @@
 <div id="auth" class="auth">
   <div class="card">
     <div class="brand"><span class="dot"></span><span>Viraly</span></div>
-    <p class="muted" style="margin-top:10px">Video automation, on autopilot.</p>
-    <div class="tabs">
-      <div class="tab on" id="tabLogin">Log in</div>
-      <div class="tab" id="tabSignup">Sign up</div>
-    </div>
-    <div>
-      <label>Email</label>
-      <input id="email" type="email" autocomplete="email" placeholder="you@email.com" />
-    </div>
-    <div style="margin-top:14px">
-      <label>Password</label>
-      <input id="pw" type="password" autocomplete="current-password" placeholder="********" />
-    </div>
+    <p class="muted" style="margin-top:10px">Faceless video automation for YouTube &amp; TikTok.</p>
+    <div class="tabs"><div class="tab on" id="tabLogin">Log in</div><div class="tab" id="tabSignup">Sign up</div></div>
+    <div><label>Email</label><input id="email" type="email" autocomplete="email" placeholder="you@email.com" /></div>
+    <div style="margin-top:14px"><label>Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="********" /></div>
     <div class="msg" id="authMsg"></div>
     <div style="margin-top:18px"><button class="btn" id="authBtn">Log in</button></div>
   </div>
@@ -90,137 +72,164 @@
 <div id="dash" class="wrap hide">
   <header class="top">
     <div class="brand"><span class="dot"></span><span>Viraly</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
+    <div class="chips">
+      <span class="badge tt" id="ttBadge">TikTok: not linked</span>
       <span class="badge plan" id="planBadge">FREE</span>
-      <button class="btn ghost" id="signout" style="width:auto;padding:9px 14px">Sign out</button>
+      <button class="btn ghost sm" id="signout">Sign out</button>
     </div>
   </header>
 
-  <div class="grid">
-    <div class="card stat"><div class="l">Plan</div><div class="n grad" id="planName">Free</div>
-      <div class="muted" id="planStatus" style="margin-top:6px">-</div></div>
-    <div class="card stat"><div class="l">Video credits left</div><div class="n" id="credits">-</div>
-      <div class="muted" style="margin-top:6px">resets monthly</div></div>
+  <div class="grid" style="margin-bottom:14px">
+    <div class="card stat" style="margin:0"><div class="l">Plan</div><div class="n grad" id="planName">Free</div><div class="muted" id="planStatus" style="margin-top:6px">-</div></div>
+    <div class="card stat" style="margin:0"><div class="l">Video credits left</div><div class="n" id="credits">-</div><div class="muted" style="margin-top:6px">resets monthly</div></div>
   </div>
 
   <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div style="font-weight:700;font-size:17px">Your videos</div>
-      <button class="btn" id="newVid" style="width:auto;padding:9px 14px;font-size:13px">+ New video</button>
+    <div class="h">Generate a video</div>
+    <div style="margin-top:12px"><label>Title</label><input id="vTitle" placeholder="e.g. 3 AI tools that feel illegal" /></div>
+    <div style="margin-top:12px"><label>Script / prompt</label><textarea id="vPrompt" placeholder="What should the video be about?"></textarea></div>
+    <div class="row2" style="margin-top:12px">
+      <div><label>Platform</label><select id="vPlatform"><option value="youtube">YouTube</option><option value="tiktok">TikTok</option></select></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn" id="genBtn">Generate video</button></div>
     </div>
-    <div id="vids" style="margin-top:14px">
-      <div class="vid"><div><div class="sk" style="width:160px"></div></div><div class="sk" style="width:60px"></div></div>
+    <div class="msg" id="genMsg"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between"><div class="h">Your videos</div>
+      <button class="btn ghost sm" id="refreshBtn">Refresh</button></div>
+    <div id="vids" style="margin-top:14px"><div class="empty">Loading...</div></div>
+  </div>
+
+  <div class="card" id="ttCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div><div class="h">Auto-post to TikTok</div><div class="muted" style="margin-top:4px">Link your account to publish renders automatically.</div></div>
+      <button class="btn sm" id="ttBtn" style="width:auto">Connect TikTok</button>
     </div>
   </div>
 
-  <p class="muted" style="text-align:center;margin-top:18px">
-    MVP build, wired to Supabase. Billing and auto-post coming next.
-  </p>
+  <div class="card">
+    <div class="h">Upgrade</div>
+    <div class="plans">
+      <div class="plan"><div class="pn">Basic</div><div class="pp">20 videos / month</div>
+        <button class="btn sm" data-plan="basic" data-cycle="monthly" style="width:100%;margin-bottom:8px">RM399 / mo</button>
+        <button class="btn ghost sm" data-plan="basic" data-cycle="annual" style="width:100%">Annual -20%</button></div>
+      <div class="plan pro"><div class="pn grad">Pro</div><div class="pp">45 videos / month</div>
+        <button class="btn sm" data-plan="pro" data-cycle="monthly" style="width:100%;margin-bottom:8px">RM699 / mo</button>
+        <button class="btn ghost sm" data-plan="pro" data-cycle="annual" style="width:100%">Annual -20%</button></div>
+    </div>
+    <div class="muted" id="billNote" style="margin-top:12px"></div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://jmtcdegcsrxjenxjnxse.supabase.co";
   const SUPABASE_KEY = "sb_publishable_ufUjg7d8sbcyFCZUv1JvCg_0hAuhzm3";
+  const FN = SUPABASE_URL + "/functions/v1";
+  const PRICES = { basic_monthly:"", basic_annual:"", pro_monthly:"", pro_annual:"" };
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
   const $ = (id) => document.getElementById(id);
-  let mode = "login";
+  let mode = "login", refreshTimer = null;
 
-  $("tabLogin").onclick = () => setMode("login");
-  $("tabSignup").onclick = () => setMode("signup");
-  function setMode(m){
-    mode = m;
-    $("tabLogin").classList.toggle("on", m==="login");
-    $("tabSignup").classList.toggle("on", m==="signup");
-    $("authBtn").textContent = m==="login" ? "Log in" : "Create account";
-    $("pw").setAttribute("autocomplete", m==="login" ? "current-password" : "new-password");
-    hideMsg();
-  }
-  function showMsg(t,kind){ const e=$("authMsg"); e.textContent=t; e.className="msg "+kind; }
-  function hideMsg(){ $("authMsg").className="msg"; }
+  function toast(t){ const e=$("toast"); e.textContent=t; e.classList.add("show"); setTimeout(()=>e.classList.remove("show"),3200); }
 
-  $("authBtn").onclick = async () => {
-    const email=$("email").value.trim(), pw=$("pw").value;
-    if(!email || !pw){ showMsg("Email and password required.","err"); return; }
-    $("authBtn").disabled=true;
-    try{
-      if(mode==="signup"){
-        const {data,error}=await sb.auth.signUp({email,password:pw});
-        if(error) throw error;
-        if(data.user && !data.session){
-          showMsg("Check your email to confirm, then log in.","ok");
-          setMode("login"); return;
-        }
-        await ensureProfile(data.user);
-      } else {
-        const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
-        if(error) throw error;
-        await ensureProfile(data.user);
-      }
+  (function(){ const p=new URLSearchParams(location.search);
+    if(p.get("checkout")==="success") toast("Payment received - plan updating shortly.");
+    if(p.get("checkout")==="cancel") toast("Checkout canceled.");
+    if(p.get("tiktok")==="connected") toast("TikTok linked!");
+    if(p.get("tiktok")) history.replaceState({},"",location.pathname);
+  })();
+
+  $("tabLogin").onclick=()=>setMode("login"); $("tabSignup").onclick=()=>setMode("signup");
+  function setMode(m){mode=m;$("tabLogin").classList.toggle("on",m==="login");$("tabSignup").classList.toggle("on",m==="signup");
+    $("authBtn").textContent=m==="login"?"Log in":"Create account";$("authMsg").className="msg";}
+  function aMsg(t,k){const e=$("authMsg");e.textContent=t;e.className="msg "+k;}
+
+  $("authBtn").onclick=async()=>{const email=$("email").value.trim(),pw=$("pw").value;
+    if(!email||!pw){aMsg("Email and password required.","err");return;} $("authBtn").disabled=true;
+    try{ if(mode==="signup"){const{data,error}=await sb.auth.signUp({email,password:pw}); if(error)throw error;
+        if(data.user&&!data.session){aMsg("Check your email to confirm, then log in.","ok");setMode("login");return;} await ensureProfile(data.user);}
+      else {const{data,error}=await sb.auth.signInWithPassword({email,password:pw}); if(error)throw error; await ensureProfile(data.user);}
       await boot();
-    }catch(e){ showMsg(e.message||"Auth failed.","err"); }
-    finally{ $("authBtn").disabled=false; }
-  };
+    }catch(e){aMsg(e.message||"Auth failed.","err");} finally{$("authBtn").disabled=false;}};
 
-  async function ensureProfile(user){
-    if(!user) return;
-    await sb.from("viraly_profiles").upsert(
-      { id:user.id, email:user.email }, { onConflict:"id" }
-    );
+  async function ensureProfile(user){ if(user) await sb.from("viraly_profiles").upsert({id:user.id,email:user.email},{onConflict:"id"}); }
+
+  async function authedFetch(path, body){
+    const { data:{ session } } = await sb.auth.getSession();
+    const r = await fetch(FN+path,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},body:JSON.stringify(body||{})});
+    return { ok:r.ok, data: await r.json().catch(()=>({})) };
   }
 
   async function boot(){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ $("auth").classList.remove("hide"); $("dash").classList.add("hide"); return; }
     $("auth").classList.add("hide"); $("dash").classList.remove("hide");
-    loadPlan(session.user.id);
-    loadVideos(session.user.id);
+    setupPrices();
+    await Promise.all([loadPlan(session.user.id), loadVideos(session.user.id), loadTikTok(session.user.id)]);
   }
 
   async function loadPlan(uid){
-    const { data:sub } = await sb.from("viraly_subscriptions")
-      .select("plan,status").eq("user_id",uid).maybeSingle();
-    const plan = sub?.plan || "free";
-    const status = sub?.status || "inactive";
-    const quota = { free:1, basic:20, pro:45 }[plan] ?? 1;
-    $("planName").textContent = plan.charAt(0).toUpperCase()+plan.slice(1);
-    $("planBadge").textContent = plan.toUpperCase();
-    $("planStatus").textContent = status;
+    const { data:sub } = await sb.from("viraly_subscriptions").select("plan,status").eq("user_id",uid).maybeSingle();
+    const plan=sub?.plan||"free", status=sub?.status||"inactive", quota={free:1,basic:20,pro:45}[plan]??1;
+    $("planName").textContent=plan[0].toUpperCase()+plan.slice(1); $("planBadge").textContent=plan.toUpperCase(); $("planStatus").textContent=status;
     const { data:led } = await sb.from("viraly_credit_ledger").select("delta").eq("user_id",uid);
-    const used = (led||[]).reduce((s,r)=>s+(r.delta<0?-r.delta:0),0);
-    $("credits").textContent = Math.max(quota-used,0)+" / "+quota;
+    const used=(led||[]).reduce((s,r)=>s+(r.delta<0?-r.delta:0),0);
+    $("credits").textContent=Math.max(quota-used,0)+" / "+quota;
+  }
+
+  async function loadTikTok(uid){
+    const badge=$("ttBadge");
+    if(new URLSearchParams(location.search).get("tiktok")==="connected"){ badge.textContent="TikTok: linked"; badge.classList.add("on"); }
   }
 
   async function loadVideos(uid){
-    const { data:vids } = await sb.from("viraly_videos")
-      .select("id,title,status,platform,created_at").eq("user_id",uid)
-      .order("created_at",{ascending:false});
+    const { data:vids } = await sb.from("viraly_videos").select("id,title,status,platform,render_url,created_at").eq("user_id",uid).order("created_at",{ascending:false});
     const box=$("vids");
-    if(!vids || !vids.length){
-      box.innerHTML='<div class="empty">No videos yet - hit <b>+ New video</b> to queue your first one.</div>';
-      return;
-    }
-    box.innerHTML = vids.map(v=>
-      '<div class="vid"><div><div class="t">'+esc(v.title||"Untitled video")+
-      '</div><div class="s">'+(v.platform||"-")+' &middot; '+new Date(v.created_at).toLocaleDateString()+
-      '</div></div><span class="pill '+v.status+'">'+v.status+'</span></div>'
-    ).join("");
+    if(!vids||!vids.length){ box.innerHTML='<div class="empty">No videos yet - generate your first above.</div>'; stopAuto(); return; }
+    box.innerHTML=vids.map(v=>'<div class="vid"><div><div class="t">'+esc(v.title||"Untitled")+'</div><div class="s">'+(v.platform||"-")+' &middot; '+new Date(v.created_at).toLocaleDateString()+(v.render_url?' &middot; <a class="lk" href="'+v.render_url+'" target="_blank">view</a>':'')+'</div></div><span class="pill '+v.status+'">'+v.status+'</span></div>').join("");
+    if(vids.some(v=>v.status==="rendering"||v.status==="queued")) startAuto(uid); else stopAuto();
   }
+  function startAuto(uid){ if(refreshTimer)return; refreshTimer=setInterval(()=>loadVideos(uid),8000); }
+  function stopAuto(){ if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;} }
+  function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-  function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-  $("newVid").onclick = async () => {
-    const { data:{ session } } = await sb.auth.getSession();
-    if(!session) return;
-    const title = prompt("Video idea / title:");
-    if(!title) return;
-    await sb.from("viraly_videos").insert({ user_id:session.user.id, title, status:"queued", platform:"youtube" });
-    loadVideos(session.user.id);
+  $("genBtn").onclick=async()=>{
+    const title=$("vTitle").value.trim(), prompt=$("vPrompt").value.trim(), platform=$("vPlatform").value;
+    const gm=$("genMsg");
+    if(!title){gm.textContent="Title required.";gm.className="msg err";return;}
+    $("genBtn").disabled=true; gm.className="msg";
+    const { ok, data } = await authedFetch("/viraly-render",{title,source_prompt:prompt,platform});
+    $("genBtn").disabled=false;
+    if(!ok){ gm.textContent=data.error==="quota_exceeded"?"Out of credits - upgrade to generate more.":(data.error||"Failed."); gm.className="msg err"; return; }
+    gm.textContent="Queued! Rendering will appear below."; gm.className="msg ok"; $("vTitle").value="";$("vPrompt").value="";
+    const { data:{ session } } = await sb.auth.getSession(); loadVideos(session.user.id); loadPlan(session.user.id);
   };
 
-  $("signout").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  $("refreshBtn").onclick=async()=>{ const{data:{session}}=await sb.auth.getSession(); loadVideos(session.user.id); };
 
+  $("ttBtn").onclick=async()=>{
+    const { ok, data } = await authedFetch("/viraly-tiktok-oauth",{});
+    if(ok && data.url) location.href=data.url; else toast(data.error||"TikTok not configured yet.");
+  };
+
+  function setupPrices(){
+    const note=$("billNote"); let any=false;
+    document.querySelectorAll("[data-plan]").forEach(b=>{
+      const key=b.dataset.plan+"_"+b.dataset.cycle, pid=PRICES[key];
+      if(!pid){ b.disabled=true; } else { any=true;
+        b.onclick=async()=>{ b.disabled=true;
+          const { ok, data } = await authedFetch("/viraly-checkout",{priceId:pid,plan:b.dataset.plan});
+          b.disabled=false; if(ok && data.url) location.href=data.url; else toast(data.error||"Checkout unavailable."); };
+      }
+    });
+    note.textContent = any ? "Annual billed yearly at 20% off." : "Checkout activates once Stripe price IDs are set.";
+  }
+
+  $("signout").onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
   boot();
 </script>
 </body>
