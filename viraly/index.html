@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Viraly — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0d0a14; --bg2:#15101f; --card:#1b1428; --line:#2c2140;
+    --violet:#8b5cf6; --pink:#ec4899; --txt:#f2eefb; --mut:#9a8fb5;
+    --grad:linear-gradient(120deg,#8b5cf6 0%,#ec4899 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:
+    radial-gradient(1200px 600px at 80% -10%,rgba(236,72,153,.12),transparent),
+    radial-gradient(1000px 500px at -10% 10%,rgba(139,92,246,.14),transparent),var(--bg);
+    color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:20px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:-.5px}
+  .dot{width:30px;height:30px;border-radius:9px;background:var(--grad);display:inline-block;
+    box-shadow:0 6px 20px rgba(236,72,153,.35)}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .btn{font-family:inherit;font-weight:700;border:0;border-radius:12px;padding:13px 18px;
+    background:var(--grad);color:#fff;cursor:pointer;font-size:15px;width:100%;
+    box-shadow:0 8px 24px rgba(139,92,246,.28);transition:transform .12s,opacity .2s}
+  .btn:hover{transform:translateY(-1px)} .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none;color:var(--txt)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+  input{width:100%;font-family:inherit;font-size:15px;color:var(--txt);background:var(--bg2);
+    border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-top:8px}
+  input:focus{outline:0;border-color:var(--violet)}
+  label{font-size:13px;color:var(--mut);font-weight:600}
+  .auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .auth .card{width:100%;max-width:400px}
+  .tabs{display:flex;gap:6px;background:var(--bg2);border-radius:12px;padding:5px;margin:18px 0}
+  .tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-weight:600;font-size:14px;
+    color:var(--mut);cursor:pointer}
+  .tab.on{background:var(--card);color:var(--txt)}
+  .msg{font-size:13px;margin-top:12px;padding:10px 12px;border-radius:10px;display:none}
+  .msg.err{display:block;background:rgba(236,72,153,.12);color:#ffb4d4;border:1px solid rgba(236,72,153,.3)}
+  .msg.ok{display:block;background:rgba(139,92,246,.12);color:#cdbcff;border:1px solid rgba(139,92,246,.3)}
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+  .badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--mut)}
+  .badge.plan{background:var(--grad);color:#fff;border:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .stat .n{font-size:30px;font-weight:800;margin-top:4px}
+  .stat .l{font-size:13px;color:var(--mut);font-weight:600}
+  .vid{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+  .vid:last-child{border-bottom:0}
+  .vid .t{font-weight:600;font-size:15px} .vid .s{font-size:12px;color:var(--mut)}
+  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+  .pill.queued{background:rgba(154,143,181,.15);color:var(--mut)}
+  .pill.rendering{background:rgba(139,92,246,.16);color:#cdbcff}
+  .pill.done,.pill.posted{background:rgba(52,211,153,.14);color:#6ee7b7}
+  .empty{text-align:center;color:var(--mut);padding:34px 10px;font-size:14px}
+  .muted{color:var(--mut);font-size:13px}
+  .hide{display:none!important}
+  .sk{height:14px;border-radius:7px;background:linear-gradient(90deg,#241a35,#2c2140,#241a35);
+    background-size:200% 100%;animation:sh 1.2s infinite}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<div id="auth" class="auth">
+  <div class="card">
+    <div class="brand"><span class="dot"></span><span>Viraly</span></div>
+    <p class="muted" style="margin-top:10px">Video automation, on autopilot.</p>
+    <div class="tabs">
+      <div class="tab on" id="tabLogin">Log in</div>
+      <div class="tab" id="tabSignup">Sign up</div>
+    </div>
+    <div>
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="you@email.com" />
+    </div>
+    <div style="margin-top:14px">
+      <label>Password</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="********" />
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div style="margin-top:18px"><button class="btn" id="authBtn">Log in</button></div>
+  </div>
+</div>
+
+<div id="dash" class="wrap hide">
+  <header class="top">
+    <div class="brand"><span class="dot"></span><span>Viraly</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="badge plan" id="planBadge">FREE</span>
+      <button class="btn ghost" id="signout" style="width:auto;padding:9px 14px">Sign out</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card stat"><div class="l">Plan</div><div class="n grad" id="planName">Free</div>
+      <div class="muted" id="planStatus" style="margin-top:6px">-</div></div>
+    <div class="card stat"><div class="l">Video credits left</div><div class="n" id="credits">-</div>
+      <div class="muted" style="margin-top:6px">resets monthly</div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:700;font-size:17px">Your videos</div>
+      <button class="btn" id="newVid" style="width:auto;padding:9px 14px;font-size:13px">+ New video</button>
+    </div>
+    <div id="vids" style="margin-top:14px">
+      <div class="vid"><div><div class="sk" style="width:160px"></div></div><div class="sk" style="width:60px"></div></div>
+    </div>
+  </div>
+
+  <p class="muted" style="text-align:center;margin-top:18px">
+    MVP build, wired to Supabase. Billing and auto-post coming next.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://jmtcdegcsrxjenxjnxse.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_ufUjg7d8sbcyFCZUv1JvCg_0hAuhzm3";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const $ = (id) => document.getElementById(id);
+  let mode = "login";
+
+  $("tabLogin").onclick = () => setMode("login");
+  $("tabSignup").onclick = () => setMode("signup");
+  function setMode(m){
+    mode = m;
+    $("tabLogin").classList.toggle("on", m==="login");
+    $("tabSignup").classList.toggle("on", m==="signup");
+    $("authBtn").textContent = m==="login" ? "Log in" : "Create account";
+    $("pw").setAttribute("autocomplete", m==="login" ? "current-password" : "new-password");
+    hideMsg();
+  }
+  function showMsg(t,kind){ const e=$("authMsg"); e.textContent=t; e.className="msg "+kind; }
+  function hideMsg(){ $("authMsg").className="msg"; }
+
+  $("authBtn").onclick = async () => {
+    const email=$("email").value.trim(), pw=$("pw").value;
+    if(!email || !pw){ showMsg("Email and password required.","err"); return; }
+    $("authBtn").disabled=true;
+    try{
+      if(mode==="signup"){
+        const {data,error}=await sb.auth.signUp({email,password:pw});
+        if(error) throw error;
+        if(data.user && !data.session){
+          showMsg("Check your email to confirm, then log in.","ok");
+          setMode("login"); return;
+        }
+        await ensureProfile(data.user);
+      } else {
+        const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
+        if(error) throw error;
+        await ensureProfile(data.user);
+      }
+      await boot();
+    }catch(e){ showMsg(e.message||"Auth failed.","err"); }
+    finally{ $("authBtn").disabled=false; }
+  };
+
+  async function ensureProfile(user){
+    if(!user) return;
+    await sb.from("viraly_profiles").upsert(
+      { id:user.id, email:user.email }, { onConflict:"id" }
+    );
+  }
+
+  async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ $("auth").classList.remove("hide"); $("dash").classList.add("hide"); return; }
+    $("auth").classList.add("hide"); $("dash").classList.remove("hide");
+    loadPlan(session.user.id);
+    loadVideos(session.user.id);
+  }
+
+  async function loadPlan(uid){
+    const { data:sub } = await sb.from("viraly_subscriptions")
+      .select("plan,status").eq("user_id",uid).maybeSingle();
+    const plan = sub?.plan || "free";
+    const status = sub?.status || "inactive";
+    const quota = { free:1, basic:20, pro:45 }[plan] ?? 1;
+    $("planName").textContent = plan.charAt(0).toUpperCase()+plan.slice(1);
+    $("planBadge").textContent = plan.toUpperCase();
+    $("planStatus").textContent = status;
+    const { data:led } = await sb.from("viraly_credit_ledger").select("delta").eq("user_id",uid);
+    const used = (led||[]).reduce((s,r)=>s+(r.delta<0?-r.delta:0),0);
+    $("credits").textContent = Math.max(quota-used,0)+" / "+quota;
+  }
+
+  async function loadVideos(uid){
+    const { data:vids } = await sb.from("viraly_videos")
+      .select("id,title,status,platform,created_at").eq("user_id",uid)
+      .order("created_at",{ascending:false});
+    const box=$("vids");
+    if(!vids || !vids.length){
+      box.innerHTML='<div class="empty">No videos yet - hit <b>+ New video</b> to queue your first one.</div>';
+      return;
+    }
+    box.innerHTML = vids.map(v=>
+      '<div class="vid"><div><div class="t">'+esc(v.title||"Untitled video")+
+      '</div><div class="s">'+(v.platform||"-")+' &middot; '+new Date(v.created_at).toLocaleDateString()+
+      '</div></div><span class="pill '+v.status+'">'+v.status+'</span></div>'
+    ).join("");
+  }
+
+  function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  $("newVid").onclick = async () => {
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session) return;
+    const title = prompt("Video idea / title:");
+    if(!title) return;
+    await sb.from("viraly_videos").insert({ user_id:session.user.id, title, status:"queued", platform:"youtube" });
+    loadVideos(session.user.id);
+  };
+
+  $("signout").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+  boot();
+</script>
+</body>
+</html>
