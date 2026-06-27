@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#00a884"/>
+<title>OmniReply</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>html,body{margin:0;padding:0;background:#c9d3da;-webkit-font-smoothing:antialiased}*{-webkit-tap-highlight-color:transparent}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useRef, useEffect } = React;
+
+
+/* ══ THEMES ══ */
+const WA = {
+  dark:  { bg:"#111b21",surface:"#1f2c34",card:"#2a3942",border:"#2a3942",msgOut:"#005c4b",msgIn:"#202c33",text:"#e9edef",muted:"#8696a0",header:"#202c33",input:"#2a3942",divider:"#2a3942",subBg:"#0b141a" },
+  light: { bg:"#eae6df",surface:"#ffffff", card:"#f0f2f5",border:"#e9edef",msgOut:"#d9fdd3",msgIn:"#ffffff", text:"#111b21",muted:"#667781", header:"#f0f2f5", input:"#f0f2f5", divider:"#e9edef",subBg:"#eae6df" }
+};
+
+/* ══ COPY (BM / EN) ══ */
+const COPY = {
+  bm: {
+    broadcast:"Broadcast", contacts:"Kenalan", csat:"Kepuasan", assets:"Bahan", more:"Lagi",
+    newBroadcast:"Broadcast Baharu", compose:"Tulis Broadcast", message:"Mesej", audience:"Audiens", schedule:"Jadual",
+    sendNow:"Hantar Sekarang", scheduleSend:"Jadual Hantar", next:"Seterusnya", back2:"Balik", broadcastName:"Nama Broadcast",
+    selectAudience:"Pilih Audiens", sent:"Dihantar", delivered:"Diterima", read:"Dibaca", replied:"Dibalas",
+    quickTemplates:"Templat Cepat", summary2:"Ringkasan", searchContacts:"Cari kenalan…", export:"Eksport",
+    addContact:"Tambah Kenalan", contactInfo:"Maklumat", recentMsgs:"Mesej Terbaru", totalSpent:"Jumlah Beli", chatBtn:"Chat", callBtn:"Panggil",
+    ratings:"Penilaian", reviews:"Ulasan", responseRate:"Kadar Balas", recentReviews:"Ulasan Terbaru", basedOn:"Berdasarkan",
+    docs:"Dokumen", catalog:"Katalog", media:"Media", templates:"Templat", products:"produk", uses:"guna", soldOut:"HABIS", soldOutLbl:"Habis",
+    addProduct:"Tambah Produk", newTemplate:"Templat Baharu", price:"Harga", stock:"Stok", category:"Kategori", tips:"Tips", gotIt:"Faham ✓",
+    inbox:"Peti Masuk", all:"Semua", setupGuide:"Panduan Setup", upgrade:"Naik Taraf",
+    search:"Cari perbualan…", today:"Hari ini", online:"dalam talian", offline:"luar talian", away:"tidak aktif",
+    note:"Nota", ai:"AI", save:"Simpan", agentRemarks:"CATATAN EJEN",
+    suggestedReply:"CADANGAN BALASAN", useReply:"Guna Balasan Ini ↓", sources:"SUMBER", summary:"RUMUSAN",
+    draft:"Draf", typeMsg:"Taip mesej",
+    kb:"Pangkalan Ilmu", myFiles:"📁 Fail Saya", uploadGuide:"📋 Panduan Muat Naik", upload:"Muat Naik",
+    analytics:"Analitik", leadTemp:"Suhu Prospek", weeklyConv:"Perbualan Mingguan", channels:"Saluran", topIntents:"Niat Utama",
+    automations:"Automasi", settings:"Tetapan", chooseFramework:"Pilih Rangka Kerja", frameworkApplied:"Rangka kerja digunakan",
+    howToUse:"📋 Cara Guna", fullExample:"💬 Contoh Lengkap", whenToUse:"BILA NAK GUNA", proTip:"💡 TIP PRO",
+    goodExample:"✅ CONTOH WHATSAPP", dontDo:"🚫 JANGAN BUAT NI", stepBreakdown:"🔍 Pecahan Langkah",
+    tryInInbox:"🚀 Cuba Dalam Peti Masuk Sekarang",
+    socialChannels:"Saluran Sosial", connectMsg:"Hubungkan saluran sosial anda. Semua perbualan diurus dalam satu peti masuk.",
+    connected:"Disambung", connect:"Sambung", soon:"Akan Datang", live:"Aktif",
+    pricingTitle:"Pilih Plan", freeTrial:"Percubaan Percuma Aktif",
+    annual:"Tahunan", monthly:"Bulanan", payFor10:"Bayar 10, dapat 12", moreFlexible:"Lebih fleksibel, harga lebih tinggi",
+    save17:"Jimat ~17%", extraPerMonth:"+RM lebih/bln", lowestPrice:"Harga serendah", perDay:"sehari (plan tahunan)",
+    savePerYear:"Jimat setahun", vsMonthly:"vs bayar bulanan", canSave:"Boleh jimat", ifAnnual:"kalau pilih tahunan",
+    currentPlan:"Plan semasa", faq:"❓ Soalan Lazim",
+    teamRequired:"Perlu Plan Growth", teamRequiredDesc:"Ahli pasukan tersedia dalam Plan Growth (RM499/bln tahunan). Naik taraf untuk tambah ejen.",
+    inviteMember:"+ Jemput Ahli (Perlu Naik Taraf)", viewPricing:"Lihat Harga →",
+    demoMode:"Mod Demo", darkTheme:"Tema Gelap", showSampleData:"Tunjuk data sampel", waTheme:"Tema gelap WhatsApp",
+    obTitle:"🚀 Panduan Persediaan", obSubtitle:"Siapkan langkah untuk go live", obDone:"selesai",
+    obContinue:"Teruskan Persediaan", obUpgrade:"👑 Naik Taraf Plan",
+    billing:"Pilihan pembayaran", billingAnnual:"💰 Tahunan — harga terbaik (disyorkan)", billingMonthly:"📅 Bulanan — lebih fleksibel, harga lebih tinggi",
+    freeForever:"Percuma", faqQ:["Boleh tukar plan bila-bila masa?","AI messages dikira macam mana?","Lepas limit AI, apa jadi?","Ada kontrak untuk plan tahunan?"],
+    faqA:["Ya! Naik taraf atau turunkan bila-bila. Bayaran dikira secara pro-rata.","Setiap balasan AI = 1 mesej. Balasan manusia tidak dikira.","AI berhenti auto-balas. Anda masih boleh balas manual. Naik taraf untuk had lebih tinggi.","Tiada kontrak. Tetapi plan tahunan tidak boleh dikembalikan selepas 14 hari."],
+    fwGuide:"Panduan Rangka Kerja", fwChangeBtn:"Tukar Framework", fwAutoAssigned:"Auto-ditetapkan",
+    confidence:"KEYAKINAN", intent:"NIAT", profile:"PROFIL",
+    connectWA:"Sambung WhatsApp", waStep1:"Baca & Setuju", waStep2:"Imbas QR", waStep3:"Tersambung",
+    riskTitle:"Sebelum sambung — sila baca",
+    riskBody:"OmniReply guna WhatsApp linked-device (macam WhatsApp Web). Nombor sedia ada anda kekal — tiada migrasi.",
+    risk1:"Guna pada risiko sendiri. WhatsApp tak rasmi benarkan automasi — akaun BOLEH disekat jika hantar spam.",
+    risk2:"Hantar mesej beransur (anti-ban). Jangan blast nombor tak kenal.",
+    risk3:"Kredensial sesi disulitkan (AES-GCM) di pelayan kami. Anda boleh putuskan bila-bila masa.",
+    riskAck:"Saya faham & terima risiko ini", riskAckCta:"Setuju & Teruskan", riskBack:"Batal",
+    qrTitle:"Imbas dengan WhatsApp anda",
+    qrSteps:"WhatsApp › Tetapan › Peranti Terpaut › Pautkan Peranti › imbas kod ini",
+    qrRefresh:"Kod tamat tempoh? Jana semula", qrWaiting:"Menunggu imbasan…",
+    waConnected:"WhatsApp Tersambung", waConnectedSub:"Nombor anda kini live. AI boleh balas mesej masuk.",
+    waNumber:"Nombor", waSession:"Status Sesi", waLive:"Live", waDisconnect:"Putuskan Sambungan", waDoneBtn:"Selesai",
+  },
+  en: {
+    broadcast:"Broadcast", contacts:"Contacts", csat:"Satisfaction", assets:"Assets", more:"More",
+    newBroadcast:"New Broadcast", compose:"Compose Broadcast", message:"Message", audience:"Audience", schedule:"Schedule",
+    sendNow:"Send Now", scheduleSend:"Schedule Send", next:"Next", back2:"Back", broadcastName:"Broadcast Name",
+    selectAudience:"Select Audience", sent:"Sent", delivered:"Delivered", read:"Read", replied:"Replied",
+    quickTemplates:"Quick Templates", summary2:"Summary", searchContacts:"Search contacts…", export:"Export",
+    addContact:"Add Contact", contactInfo:"Info", recentMsgs:"Recent Messages", totalSpent:"Total Spent", chatBtn:"Chat", callBtn:"Call",
+    ratings:"Ratings", reviews:"Reviews", responseRate:"Response Rate", recentReviews:"Recent Reviews", basedOn:"Based on",
+    docs:"Documents", catalog:"Catalog", media:"Media", templates:"Templates", products:"products", uses:"uses", soldOut:"SOLD OUT", soldOutLbl:"Sold Out",
+    addProduct:"Add Product", newTemplate:"New Template", price:"Price", stock:"Stock", category:"Category", tips:"Tips", gotIt:"Got it ✓",
+    inbox:"Inbox", all:"All", setupGuide:"Setup Guide", upgrade:"Upgrade",
+    search:"Search conversations…", today:"Today", online:"online", offline:"offline", away:"away",
+    note:"Note", ai:"AI", save:"Save", agentRemarks:"AGENT REMARKS",
+    suggestedReply:"SUGGESTED REPLY", useReply:"Use This Reply ↓", sources:"SOURCES", summary:"SUMMARY",
+    draft:"Draft", typeMsg:"Type a message",
+    kb:"Knowledge Base", myFiles:"📁 My Files", uploadGuide:"📋 Upload Guide", upload:"Upload",
+    analytics:"Analytics", leadTemp:"Lead Temperature", weeklyConv:"Weekly Conversations", channels:"Channels", topIntents:"Top Intents",
+    automations:"Automations", settings:"Settings", chooseFramework:"Choose Framework", frameworkApplied:"Framework applied",
+    howToUse:"📋 How to Use", fullExample:"💬 Full Example", whenToUse:"WHEN TO USE", proTip:"💡 PRO TIP",
+    goodExample:"✅ WHATSAPP EXAMPLE", dontDo:"🚫 DON'T DO THIS", stepBreakdown:"🔍 Step Breakdown",
+    tryInInbox:"🚀 Try in Inbox Now",
+    socialChannels:"Social Channels", connectMsg:"Connect your social channels. All conversations managed in one inbox.",
+    connected:"Connected", connect:"Connect", soon:"Coming Soon", live:"Live",
+    pricingTitle:"Choose Plan", freeTrial:"Free Trial Active",
+    annual:"Annual", monthly:"Monthly", payFor10:"Pay 10, get 12", moreFlexible:"More flexible, higher price",
+    save17:"Save ~17%", extraPerMonth:"+RM more/month", lowestPrice:"As low as", perDay:"per day (annual plan)",
+    savePerYear:"Save per year", vsMonthly:"vs monthly billing", canSave:"Can save", ifAnnual:"if you choose annual",
+    currentPlan:"Current plan", faq:"❓ FAQ",
+    teamRequired:"Growth Plan Required", teamRequiredDesc:"Team members available in Growth Plan (RM499/mo annual). Upgrade to add agents.",
+    inviteMember:"+ Invite Member (Upgrade Required)", viewPricing:"View Pricing →",
+    demoMode:"Demo Mode", darkTheme:"Dark Theme", showSampleData:"Show sample data", waTheme:"WhatsApp dark mode",
+    obTitle:"🚀 Quick Setup", obSubtitle:"Complete steps to go live", obDone:"done",
+    obContinue:"Continue Setup", obUpgrade:"👑 Upgrade Plan",
+    billing:"Billing option", billingAnnual:"💰 Annual — best price (recommended)", billingMonthly:"📅 Monthly — more flexible, higher price",
+    freeForever:"Free", faqQ:["Can I change plans anytime?","How are AI messages counted?","What happens after the AI limit?","Is there a contract for annual plans?"],
+    faqA:["Yes! Upgrade or downgrade anytime. Charges are pro-rated.","Each AI reply = 1 message. Human replies don't count.","AI stops auto-replying. You can still reply manually. Upgrade for more.","No contract. But annual plans are non-refundable after 14 days."],
+    fwGuide:"Framework Guide", fwChangeBtn:"Change Framework", fwAutoAssigned:"Auto-assigned",
+    confidence:"CONFIDENCE", intent:"INTENT", profile:"PROFILE",
+    connectWA:"Connect WhatsApp", waStep1:"Read & Agree", waStep2:"Scan QR", waStep3:"Connected",
+    riskTitle:"Before connecting — please read",
+    riskBody:"OmniReply uses WhatsApp linked-device (like WhatsApp Web). Your existing number stays — no migration.",
+    risk1:"Use at your own risk. WhatsApp does not officially allow automation — accounts CAN be banned if you spam.",
+    risk2:"Messages send staggered (anti-ban). Don't blast unknown numbers.",
+    risk3:"Session credentials are encrypted (AES-GCM) on our servers. You can disconnect anytime.",
+    riskAck:"I understand & accept these risks", riskAckCta:"Agree & Continue", riskBack:"Cancel",
+    qrTitle:"Scan with your WhatsApp",
+    qrSteps:"WhatsApp › Settings › Linked Devices › Link a Device › scan this code",
+    qrRefresh:"Code expired? Regenerate", qrWaiting:"Waiting for scan…",
+    waConnected:"WhatsApp Connected", waConnectedSub:"Your number is now live. AI can reply to incoming messages.",
+    waNumber:"Number", waSession:"Session Status", waLive:"Live", waDisconnect:"Disconnect", waDoneBtn:"Done",
+  }
+};
+
+/* ══ PLANS ══ */
+const PLANS = [
+  { id:"free",  icon:"🆓", color:"#8696a0", name:{bm:"Percuma",en:"Free"},     tagline:{bm:"Cuba dulu, tiada risiko",en:"Try first, no risk"},   monthlyPrice:0,   annualPrice:0,   contacts:1,  agents:1,  aiMsg:100,
+    features:{bm:[{t:"1 kenalan",ok:true},{t:"1 ejen",ok:true},{t:"100 balasan AI / bulan",ok:true},{t:"Pangkalan Ilmu",ok:true},{t:"Automasi",ok:true},{t:"Ahli pasukan",ok:false},{t:"Analitik",ok:false},{t:"Sokongan keutamaan",ok:false}],
+              en:[{t:"1 contact",ok:true},{t:"1 agent",ok:true},{t:"100 AI replies/month",ok:true},{t:"Knowledge Base",ok:true},{t:"Automations",ok:true},{t:"Team members",ok:false},{t:"Analytics",ok:false},{t:"Priority support",ok:false}]},
+    cta:{bm:"Guna Percuma",en:"Use Free"} },
+  { id:"starter",icon:"🚀",color:"#00a884", name:{bm:"Starter",en:"Starter"},  tagline:{bm:"Untuk PKS & peniaga solo",en:"For SMEs & solo sellers"}, badge:{bm:"Popular",en:"Popular"}, monthlyPrice:129, annualPrice:99, contacts:-1, agents:1,  aiMsg:1500,
+    features:{bm:[{t:"Kenalan tanpa had",ok:true},{t:"1 ejen",ok:true},{t:"1,500 balasan AI / bulan",ok:true},{t:"Pangkalan Ilmu penuh",ok:true},{t:"Automasi penuh",ok:true},{t:"Ahli pasukan",ok:false},{t:"Papan pemuka analitik",ok:true},{t:"Sokongan emel",ok:true}],
+              en:[{t:"Unlimited contacts",ok:true},{t:"1 agent",ok:true},{t:"1,500 AI replies/month",ok:true},{t:"Full Knowledge Base",ok:true},{t:"Full Automations",ok:true},{t:"Team members",ok:false},{t:"Analytics dashboard",ok:true},{t:"Email support",ok:true}]},
+    cta:{bm:"Pilih Starter",en:"Choose Starter"} },
+  { id:"growth", icon:"👑",color:"#6366f1", name:{bm:"Growth",en:"Growth"},    tagline:{bm:"Untuk agensi & jenama ecom",en:"For agencies & ecom brands"}, badge:{bm:"Terbaik",en:"Best Value"}, monthlyPrice:649, annualPrice:499, contacts:-1, agents:-1, aiMsg:5000,
+    features:{bm:[{t:"Kenalan tanpa had",ok:true},{t:"Ejen tanpa had",ok:true},{t:"5,000 balasan AI / bulan",ok:true},{t:"Pangkalan Ilmu penuh",ok:true},{t:"Automasi penuh",ok:true},{t:"Ahli pasukan & peranan",ok:true},{t:"Analitik lanjutan",ok:true},{t:"Sokongan WA keutamaan",ok:true}],
+              en:[{t:"Unlimited contacts",ok:true},{t:"Unlimited agents",ok:true},{t:"5,000 AI replies/month",ok:true},{t:"Full Knowledge Base",ok:true},{t:"Full Automations",ok:true},{t:"Team members & roles",ok:true},{t:"Advanced analytics",ok:true},{t:"Priority WA support",ok:true}]},
+    cta:{bm:"Pilih Growth",en:"Choose Growth"} },
+];
+
+/* ══ SOCIAL CHANNELS ══ */
+const SOCIAL_CHANNELS = [
+  {id:"wa",  name:"WhatsApp",  icon:"📱", color:"#25d366", connected:true,  detail:"+60 12-888 0001", msgs:423},
+  {id:"ig",  name:"Instagram", icon:"📸", color:"#e1306c", connected:false, detail:"@omnireply",     msgs:0},
+  {id:"fb",  name:"Facebook",  icon:"👥", color:"#1877f2", connected:false, detail:"OmniReply Page", msgs:0},
+  {id:"tt",  name:"TikTok",    icon:"🎵", color:"#000000", connected:false, detail:"@omnireply",     msgs:0, soon:true},
+  {id:"tg",  name:"Telegram",  icon:"✈️", color:"#0088cc", connected:false, detail:"@omnireply_bot", msgs:0},
+  {id:"web", name:"Web Chat",  icon:"💻", color:"#6366f1", connected:true,  detail:"omnireply.com",  msgs:89},
+];
+
+/* ══ FRAMEWORKS ══ */
+const FW = [
+  { id:"aida",      icon:"✍️", color:"#6366f1", name:"AIDA", cat:{bm:"Penulisan Kopi",en:"Copywriting"},
+    desc:{bm:"Perhatian → Minat → Keinginan → Tindakan. Formula klasik untuk caption, broadcast & iklan.",en:"Attention → Interest → Desire → Action. Classic formula for captions, broadcasts & ads."},
+    lead:"warm", whenToUse:{bm:"Guna bila promote produk baru, announce promo, atau broadcast kepada warm leads.",en:"Use when promoting new products, announcing promos, or broadcasting to warm leads."},
+    uses:{bm:["Caption Instagram","Iklan Facebook","Broadcast WA","Emel"],en:["Instagram captions","Facebook Ads","WA Broadcast","Email"]},
+    steps:[
+      {s:{bm:"Perhatian",en:"Attention"},e:"😱",c:"#ef4444",d:{bm:"Hook kuat. Buat orang STOP scroll.",en:"Strong hook. Make people STOP scrolling."},tip:{bm:"Guna soalan, angka mengejut, atau statement berani.",en:"Use questions, surprising numbers, or bold statements."},good:"😱 Masih bayar harga penuh untuk skincare?\n\n87% pembeli tak tahu trick ni...",bad:{bm:"❌ 'Hi, kami nak promosi produk kami...' — terlalu generic, orang skip.",en:"❌ 'Hi, we'd like to promote our product...' — too generic, people skip."}},
+      {s:{bm:"Minat",en:"Interest"},e:"🤔",c:"#f97316",d:{bm:"Teruskan dengan fakta atau masalah yang relatable.",en:"Continue with relatable facts or problems."},tip:{bm:"Cakap masalah customer, bukan pasal diri sendiri.",en:"Talk about the customer's problem, not yourself."},good:"Ramai habis RM300+ sebulan tapi kulit masih tak glow.\nSebabnya? Produk salah untuk jenis kulit depa.",bad:{bm:"❌ 'Produk kami dah 10 tahun dalam pasaran...' — nobody cares.",en:"❌ 'Our product has been in the market 10 years...' — nobody cares."}},
+      {s:{bm:"Keinginan",en:"Desire"},e:"😍",c:"#8b5cf6",d:{bm:"Tunjuk transformation. Testimonial. Buat depa NAK.",en:"Show transformation. Testimonials. Make them WANT it."},tip:{bm:"Guna nama real, angka real, cerita real.",en:"Use real names, real numbers, real stories."},good:"Sarah dari KL jimat RM240/bulan dan kulit makin glow ✨\n'Tak sangka 2 minggu je beza!' — Sarah, 28",bad:{bm:"❌ 'Produk kami berkualiti tinggi...' — semua orang cakap benda sama.",en:"❌ 'Our product is high quality...' — everyone says the same thing."}},
+      {s:{bm:"Tindakan",en:"Action"},e:"🚀",c:"#00a884",d:{bm:"CTA jelas, urgent, satu action je.",en:"Clear, urgent CTA. One action only."},tip:{bm:"Satu CTA je. Jangan bagi pilihan terlalu banyak.",en:"One CTA only. Don't give too many choices."},good:"🔥 Reply 'GLOW' sekarang → stok tinggal 12 unit. Esok mungkin habis.",bad:{bm:"❌ 'Boleh DM, atau whatsapp, atau klik link...' — terlalu banyak pilihan.",en:"❌ 'You can DM, or WhatsApp, or click the link...' — too many options."}},
+    ],
+    full:"😱 Masih bayar harga penuh untuk skincare?\n\nRamai habis RM300+ sebulan tapi kulit masih tak glow. Sebabnya? Produk salah untuk jenis kulit.\n\nSarah jimat RM240/bulan dan kulit makin cantik ✨ 'Tak sangka 2 minggu je beza!' — Sarah, 28\n\n🔥 Reply 'GLOW' sekarang — stok tinggal 12 unit!",
+    fullTitle:{bm:"Broadcast skincare (AIDA lengkap)",en:"Skincare broadcast (full AIDA)"} },
+
+  { id:"pas",       icon:"🎯", color:"#8b5cf6", name:"PAS", cat:{bm:"Penulisan Kopi",en:"Copywriting"},
+    desc:{bm:"Masalah → Perbesarkan → Penyelesaian. Formula paling mudah, paling berkesan.",en:"Problem → Agitate → Solution. Simplest, most effective formula."},
+    lead:"cold", whenToUse:{bm:"Sesuai untuk cold leads yang belum kenal kita. Untuk content harian dan status.",en:"Best for cold leads who don't know us yet. For daily content and status."},
+    uses:{bm:["Caption pendek","Status WA","Intro broadcast","Tajuk iklan"],en:["Short captions","WA Status","Broadcast intro","Ad headlines"]},
+    steps:[
+      {s:{bm:"Masalah",en:"Problem"},e:"😤",c:"#ef4444",d:{bm:"Sebut masalah exact dalam perkataan customer sendiri.",en:"State the exact problem in the customer's own words."},tip:{bm:"Dengar perkataan customer guna dalam chat, pastu guna balik.",en:"Listen to words customers use in chat, then use them back."},good:"Susah nak dapat order konsisten dari WhatsApp?\nEveryday post tapi jualan masih tak menentu...",bad:{bm:"❌ 'Anda mempunyai masalah dalam perniagaan...' — terlalu formal.",en:"❌ 'You are experiencing business challenges...' — too formal."}},
+      {s:{bm:"Perbesarkan",en:"Agitate"},e:"🔥",c:"#f97316",d:{bm:"Pulas luka tu. Tunjuk apa jadi kalau tak selesai.",en:"Twist the knife. Show what happens if unsolved."},tip:{bm:"Buat depa rasa urgency. Tapi jangan over-drama.",en:"Create urgency. But don't over-dramatize."},good:"Setiap hari tanpa sistem = sales hilang, chat tercicir, income tak stable.\nSementara competitor dah auto-reply 24/7...",bad:{bm:"❌ Jangan exaggerate sampai tak masuk akal. Customer akan rasa manipulated.",en:"❌ Don't exaggerate beyond reason. Customers will feel manipulated."}},
+      {s:{bm:"Penyelesaian",en:"Solution"},e:"✅",c:"#00a884",d:{bm:"Introduce produk sebagai fix yang specific dan proven.",en:"Introduce your product as the specific, proven fix."},tip:{bm:"Sebut angka real. '800 bisnes' lebih power dari 'ramai dah guna'.",en:"Use real numbers. '800 businesses' is more powerful than 'many have used it'."},good:"OmniReply automate WhatsApp sales kau 24/7.\n800+ bisnes Malaysia dah guna. Setup 10 minit. Cuba free →",bad:{bm:"❌ 'Cuba produk kami yang terbaik...' — vague, tiada proof.",en:"❌ 'Try our best product...' — vague, no proof."}},
+    ],
+    full:"Susah nak dapat order konsisten dari WhatsApp?\n\nSetiap hari tanpa sistem = sales hilang, chat tercicir, income tak stable. Sementara competitor dah auto-reply 24/7.\n\nOmniReply automate WA sales kau 24/7. 800+ bisnes Malaysia dah guna. Setup 10 minit.\n\nCuba free sekarang → [link]",
+    fullTitle:{bm:"Broadcast SaaS (PAS lengkap)",en:"SaaS broadcast (full PAS)"} },
+
+  { id:"hormozi",   icon:"💎", color:"#f97316", name:"Value Stack", cat:{bm:"Reka Bentuk Tawaran",en:"Offer Design"},
+    desc:{bm:"Buat tawaran nampak sangat bagus sampai orang rasa bodoh kalau tak amik.",en:"Make your offer so good people feel stupid saying no."},
+    lead:"hot", whenToUse:{bm:"Guna bila nak close hot leads yang dah tahu produk tapi masih 'fikir-fikir'.",en:"Use when closing hot leads who know your product but are still 'thinking'."},
+    uses:{bm:["Penutupan WA","Halaman jualan","Tawaran broadcast","Webinar"],en:["WA closing","Sales page","Broadcast offer","Webinar"]},
+    steps:[
+      {s:{bm:"Hasil Impian",en:"Dream Outcome"},e:"🌟",c:"#f59e0b",d:{bm:"Sebut exactly apa yang customer nak. Spesifik dengan hasil.",en:"State exactly what the customer wants. Specific with results."},tip:{bm:"Bukan ciri — hasil. Bukan '12 modul', tapi 'kurus 10kg dalam 90 hari'.",en:"Not features — outcomes. Not '12 modules', but 'lose 10kg in 90 days'."},good:"Bayangkan kau kurus 10kg dalam 90 hari — TANPA cut carbs, TANPA gym setiap hari.",bad:{bm:"❌ 'Program kami ada 12 modul comprehensive...' — hasil mana?",en:"❌ 'Our program has 12 comprehensive modules...' — where's the outcome?"}},
+      {s:{bm:"Timbun Nilai",en:"Value Stack"},e:"📦",c:"#f97316",d:{bm:"Senarai semua yang included. Assign nilai RM setiap item.",en:"List everything included. Assign RM value to each item."},tip:{bm:"Nilai perceived mesti 10x harga sebenar.",en:"Perceived value must be 10x the actual price."},good:"✅ Program utama (nilai RM500)\n✅ Meal plan PDF (nilai RM200)\n✅ Group WA support (nilai RM300)\n✅ 1-on-1 call (nilai RM400)\nJumlah nilai: RM1,400",bad:{bm:"❌ Jangan assign nilai yang tak masuk akal. Trust hilang.",en:"❌ Don't assign unrealistic values. Trust is destroyed."}},
+      {s:{bm:"Dedah Harga",en:"Price Reveal"},e:"💰",c:"#ef4444",d:{bm:"Reveal harga sebenar dengan contrast dari nilai stacked.",en:"Reveal the real price in contrast to the stacked value."},tip:{bm:"Bagi masa orang digest nilai dulu, then reveal harga.",en:"Let people absorb the value first, then reveal the price."},good:"Semua tu... bukan RM1,400.\nBukan RM700.\nHari ni sahaja: RM197 je. 🔥",bad:{bm:"❌ Jangan reveal harga awal. Kena bagi orang rasa nilai dulu.",en:"❌ Don't reveal price early. Let people feel the value first."}},
+      {s:{bm:"Jaminan",en:"Guarantee"},e:"🛡️",c:"#00a884",d:{bm:"Buang semua risiko dari customer.",en:"Remove all risk from the customer."},tip:{bm:"Semakin berani jaminan, semakin tinggi conversion.",en:"The bolder the guarantee, the higher the conversion."},good:"30-hari full refund kalau tak dapat result. Zero soalan.\n94% member dapat result dalam 60 hari pertama.",bad:{bm:"❌ 'Subject to terms and conditions...' — membunuh trust.",en:"❌ 'Subject to terms and conditions...' — kills trust completely."}},
+      {s:{bm:"Kecemasan",en:"Urgency"},e:"⏰",c:"#ec4899",d:{bm:"Tarikh akhir atau stok REAL. Kecemasan palsu bunuh trust.",en:"Real deadline or limited stock. Fake urgency kills trust."},tip:{bm:"Ikat deadline kepada event real — batch close, stok habis.",en:"Tie deadline to a real event — batch close, out of stock."},good:"⚠️ Hanya 8 slot lagi. Batch ni tutup Jumaat tengah malam.\nReply 'MULA' sekarang.",bad:{bm:"❌ Timer countdown yang reset bila refresh — customer perasan.",en:"❌ Countdown timer that resets on refresh — customers notice."}},
+    ],
+    full:"Bayangkan kau kurus 10kg dalam 90 hari — tanpa cut carbs, tanpa gym setiap hari.\n\nYang kau dapat:\n✅ Program utama (nilai RM500)\n✅ Meal plan PDF (nilai RM200)\n✅ Group WA support (nilai RM300)\n✅ 1-on-1 call (nilai RM400)\nJumlah nilai: RM1,400\n\nHari ni: RM197 je 🔥\n\n30-hari refund kalau tak dapat result. Zero soalan.\n\n⚠️ 8 slot je lagi. Tutup Jumaat. Reply 'MULA' sekarang.",
+    fullTitle:{bm:"Penutupan kursus fitness (Value Stack)",en:"Fitness course closing (Value Stack)"} },
+
+  { id:"leads",     icon:"🌡️", color:"#00a884", name:"Cold→Warm→Hot", cat:{bm:"Pemupukan Prospek",en:"Lead Nurturing"},
+    desc:{bm:"Sesuaikan mesej ikut tahap customer dalam perjalanan pembelian.",en:"Tailor messages to where the customer is in the buying journey."},
+    lead:"all", whenToUse:{bm:"Untuk segmentasi broadcast dan customize cara reply dalam inbox.",en:"For broadcast segmentation and customizing replies in the inbox."},
+    uses:{bm:["Segmentasi broadcast","Balas chat","Re-engagement","Susulan"],en:["Broadcast segmentation","Chat replies","Re-engagement","Follow-ups"]},
+    steps:[
+      {s:{bm:"Prospek Sejuk",en:"Cold Lead"},e:"❄️",c:"#0ea5e9",d:{bm:"Belum kenal kita. JANGAN pitch lagi. Didik & bagi nilai dulu.",en:"Doesn't know us. DON'T pitch yet. Educate & give value first."},tip:{bm:"Tujuan: buat depa kenal dan percaya kita. Bukan jual lagi.",en:"Goal: make them know and trust us. Not selling yet."},good:"💡 Tahu tak 3 sebab kenapa ramai peniaga WA tak dapat order konsisten?\n\n1. Reply lambat\n2. Tiada sistem susulan\n3. Mesej terlalu salesy\n\nEsok kita share cara fix ni 👀",bad:{bm:"❌ 'Jom beli produk kami RM99 je!' kepada orang baru follow — terus unfollow.",en:"❌ 'Buy our product for just RM99!' to a brand new follower — instant unfollow."}},
+      {s:{bm:"Prospek Suam",en:"Warm Lead"},e:"🌤️",c:"#f97316",d:{bm:"Dah kenal kita. Bina kepercayaan, atasi keberatan, kongsi bukti.",en:"Knows us. Build trust, handle objections, share proof."},tip:{bm:"Refer balik action depa — acknowledge kalau dah tengok produk.",en:"Refer back to their action — acknowledge if they've viewed your product."},good:"Hi [Nama]! Nampak kau dah tengok pakej Bali kita 👀\n\n⭐ 'Servis luar biasa' — Puan Ros\n⭐ 'All-in tak perlu fikir' — Encik Hafiz\n\nAda soalan? Akak boleh bantu 😊",bad:{bm:"❌ Terus send price list tanpa warm up — rasa macam spam.",en:"❌ Sending price list immediately without warming up — feels like spam."}},
+      {s:{bm:"Prospek Panas",en:"Hot Lead"},e:"🔥",c:"#ef4444",d:{bm:"Ready nak beli. Close tegas. Buang halangan. Kecemasan.",en:"Ready to buy. Close decisively. Remove friction. Urgency."},tip:{bm:"Satu soalan je: 'Nak saya reserve untuk [Nama]?'",en:"Just one question: 'Shall I reserve for [Name]?'"},good:"Hi [Nama]! August Bali — tinggal 2 slot je 🌴\nRM13,800 untuk 4 orang. All-in.\n\nNak akak reserve nama sekarang? Reply 'YES' ✅",bad:{bm:"❌ 'Fikir-fikir dulu ye...' — kalau dah hot, jangan bagi depa cool down.",en:"❌ 'Take your time...' — if they're hot, don't let them cool down."}},
+    ],
+    full:"📅 Hari 1 (Sejuk):\n'Tahu tak 5 destinasi Asia best untuk family 2025? Esok akak share list lengkap 🌏'\n\n📅 Hari 3 (Suam):\n'Hi [Nama]! Nampak you interested Bali. Ni cerita Puan Ros yang baru balik — best gila! Ada soalan?'\n\n📅 Hari 5 (Panas):\n'Hi [Nama]! Bali August tinggal 2 slot. Nak akak reserve? Reply YES ✅'",
+    fullTitle:{bm:"Urutan susulan 3 hari (travel agency)",en:"3-day follow-up sequence (travel agency)"} },
+
+  { id:"sabri",     icon:"🧠", color:"#ec4899", name:"Sabri Suby HPST", cat:{bm:"Psikologi Jualan",en:"Sales Psychology"},
+    desc:{bm:"Hook Tepat → Masalah Diperbesarkan → Bukti Sosial → Tawaran. Untuk penutupan high-ticket.",en:"Hyper Hook → Problem Agitate → Social Proof → Transition. For high-ticket closing."},
+    lead:"warm", whenToUse:{bm:"Untuk produk/servis mahal (RM500+). Perlu warm leads yang dah kenal kita.",en:"For expensive products/services (RM500+). Needs warm leads who know us."},
+    uses:{bm:["Penutupan high-ticket","Halaman jualan","Urutan emel","Skrip video"],en:["High-ticket closing","Sales page","Email sequence","Video script"]},
+    steps:[
+      {s:{bm:"Hook Tepat",en:"Hyper Hook"},e:"🎯",c:"#ec4899",d:{bm:"Cakap HANYA kepada ideal customer. Tolak semua orang lain.",en:"Speak ONLY to your ideal customer. Repel everyone else."},tip:{bm:"Semakin spesifik hook, semakin tinggi conversion.",en:"The more specific the hook, the higher the conversion."},good:"Ini KHUSUS untuk pemilik bisnes online yang dah buat RM10k/bulan tapi stuck nak scale ke RM50k.",bad:{bm:"❌ 'Untuk semua orang yang nak buat duit online...' — terlalu luas.",en:"❌ 'For everyone who wants to make money online...' — too broad."}},
+      {s:{bm:"Masalah & Perbesarkan",en:"Problem Agitate"},e:"😰",c:"#f97316",d:{bm:"Nama pain depa. Pastu buat depa RASA betapa teruknya sekarang.",en:"Name their pain. Then make them FEEL how bad it is right now."},tip:{bm:"Gambarkan kehidupan depa sekarang dengan detail.",en:"Describe their current life in detail."},good:"Kau kerja 12 jam sehari tapi revenue masih sama. Setiap bulan mula dari zero.\n\nBukan salah kau — sistemnya yang tak betul.",bad:{bm:"❌ Jangan over-dramatic sampai rasa fake.",en:"❌ Don't over-dramatize until it feels fake."}},
+      {s:{bm:"Bukti Sosial",en:"Social Proof"},e:"⭐",c:"#f59e0b",d:{bm:"Tangkapan skrin, kajian kes, angka real. Kuantiti dan kualiti.",en:"Screenshots, case studies, real numbers. Quantity and quality."},tip:{bm:"Spesifik lebih power: '847 klien' > 'ramai klien'.",en:"Specific is more powerful: '847 clients' > 'many clients'."},good:"847 bisnes dah guna sistem ni.\n📈 Puan Rina: RM8k → RM34k dalam 4 bulan\n📈 Encik Zul: 2 staff → 12 staff setahun\n⭐⭐⭐⭐⭐ 4.9/5 dari 2,400 ulasan",bad:{bm:"❌ 'Ramai customer kami berpuas hati...' — vague, tiada kredibiliti.",en:"❌ 'Many of our customers are satisfied...' — vague, no credibility."}},
+      {s:{bm:"Peralihan + CTA",en:"Transition + CTA"},e:"🚀",c:"#00a884",d:{bm:"Bridge ke tawaran. Satu CTA, satu tindakan, ada tarikh akhir.",en:"Bridge to offer. One CTA, one action, time-bound."},tip:{bm:"Jangan explain tawaran panjang. Satu ayat, satu CTA.",en:"Don't explain the offer at length. One sentence, one CTA."},good:"Sistem yang sama untuk semua 847 klien — sekarang available untuk kau.\n\nDM 'SCALE' untuk strategy call free 20 minit. 5 slot je minggu ni.",bad:{bm:"❌ Jangan letak 3-4 CTA berbeza. Decision paralysis = tak buat apa.",en:"❌ Don't put 3-4 different CTAs. Decision paralysis = no action."}},
+    ],
+    full:"Ini KHUSUS untuk pemilik bisnes online yang dah buat RM10k/bulan tapi stuck nak scale.\n\nKau kerja 12 jam sehari tapi revenue sama je. Bukan salah kau — sistemnya yang tak betul.\n\n847 bisnes dah guna sistem ni:\n📈 Puan Rina: RM8k → RM34k dalam 4 bulan\n⭐⭐⭐⭐⭐ 4.9/5 dari 2,400 ulasan\n\nDM 'SCALE' untuk strategy call free 20 minit. 5 slot je minggu ni.",
+    fullTitle:{bm:"Mesej high-ticket coaching (HPST)",en:"High-ticket coaching message (HPST)"} },
+
+  { id:"offerstack", icon:"📦", color:"#f59e0b", name:"Offer Stack", cat:{bm:"Reka Bentuk Tawaran",en:"Offer Design"},
+    desc:{bm:"Bundle komponen jadi satu tawaran irresistible. Nilai perceived kena 10x harga.",en:"Bundle components into one irresistible offer. Perceived value must be 10x the price."},
+    lead:"hot", whenToUse:{bm:"Masa nak launch produk baru, atau convert leads yang dah lama 'fikir-fikir'.",en:"When launching a new product, or converting leads who have been 'thinking' for a while."},
+    uses:{bm:["Kempen pelancaran","Promo bundle","Pemulihan troli ditinggal","Upsell VIP"],en:["Launch campaign","Bundle promo","Cart abandonment","VIP upsell"]},
+    steps:[
+      {s:{bm:"Produk Utama",en:"Core Product"},e:"🎁",c:"#f59e0b",d:{bm:"Produk utama dengan hasil ultra-spesifik.",en:"Main product with ultra-specific outcome."},tip:{bm:"Spesifik = kredibel. 'Kurus 10kg' > 'jadi lebih sihat'.",en:"Specific = credible. 'Lose 10kg' > 'become healthier'."},good:"Program Transformasi 12 Minggu — Kurus 8-12kg tanpa lapar, tanpa gym wajib.",bad:{bm:"❌ 'Program kesihatan komprehensif kami...' — hasil mana?",en:"❌ 'Our comprehensive health program...' — where's the outcome?"}},
+      {s:{bm:"Bonus",en:"Bonuses"},e:"🎀",c:"#ec4899",d:{bm:"Tambah items kos rendah tapi nilai perceived tinggi.",en:"Add low-cost items with high perceived value."},tip:{bm:"Bonus kena relevan dan spesifik. Jangan tambah sampah.",en:"Bonuses must be relevant and specific. Don't add junk."},good:"+ Meal plan 12 minggu (nilai RM180)\n+ Kumpulan WA support 24/7 (nilai RM250)\n+ Weekly Q&A live (nilai RM400)\n+ Tracker digital (nilai RM80)",bad:{bm:"❌ 'Free e-book' tanpa nyatakan nilai — nampak murah.",en:"❌ 'Free e-book' without stating value — looks cheap."}},
+      {s:{bm:"Kecemasan",en:"Urgency"},e:"⏰",c:"#ef4444",d:{bm:"Tarikh akhir atau stok yang REAL. Max 48-72 jam.",en:"Real deadline or scarcity. Max 48-72 hours."},tip:{bm:"Ikat deadline kepada event real — batch close, stok habis.",en:"Tie deadline to a real event — batch close, out of stock."},good:"⚠️ Bonus-bonus ni hilang Jumaat 11:59PM.\nLepas tu harga naik balik RM497.",bad:{bm:"❌ Timer countdown yang reset bila refresh — customer perasan.",en:"❌ Countdown timer that resets on refresh — customers notice."}},
+      {s:{bm:"Balikkan Risiko",en:"Risk Reversal"},e:"🛡️",c:"#00a884",d:{bm:"Ambil semua risiko dari customer. Sifar risiko untuk depa.",en:"Take all risk from the customer. Zero risk for them."},tip:{bm:"'Wang dikembalikan berganda' > 'refund penuh'. Tapi kena boleh deliver.",en:"'Double money back' > 'full refund'. But you must be able to deliver."},good:"Kalau dalam 30 hari tak nampak result, refund penuh. Zero soalan.\nKami confident — 91% ahli nampak result minggu pertama.",bad:{bm:"❌ 'Refund tertakluk kepada semakan 14-30 hari...' — bunuh tawaran.",en:"❌ 'Refund subject to 14-30 day review...' — kills the offer."}},
+    ],
+    full:"Program Transformasi 12 Minggu — Kurus 8-12kg tanpa lapar.\n\nYang kau dapat:\n🎁 Program utama (RM350)\n🎀 Meal plan PDF (RM180)\n🎀 Group WA support (RM250)\n🎀 Weekly Q&A live (RM400)\n🎀 Tracker digital (RM80)\nJumlah nilai: RM1,260\n\nHari ni: RM297 je ✨\n\n⚠️ Bonus hilang Jumaat 11:59PM.\n\n🛡️ 30-hari refund penuh. Zero soalan.",
+    fullTitle:{bm:"Promo bundle fitness (Offer Stack)",en:"Fitness bundle promo (Offer Stack)"} },
+];
+
+/* auto-assign framework by lead type */
+const fwForLead = (lead) => {
+  if(lead==="hot")  return FW.find(f=>f.id==="hormozi");
+  if(lead==="warm") return FW.find(f=>f.id==="aida");
+  return FW.find(f=>f.id==="pas");
+};
+
+/* ══ CONTACTS ══ */
+const CONTACTS = [
+  {id:"c1",name:"Aisha Rahman",  avatar:"AR",color:"#00a884",tag:"VIP",       lead:"hot",  status:"online",  lastMsg:"Is my order still on track?",  lastTime:"10:22",unread:2,pinned:true, muted:false,intent:{bm:"Status Pesanan",en:"Order Status"},confidence:94,sentiment:"positive",orders:12,spent:"RM 2,840",remark:"High LTV customer. Always responsive.",remarkAdded:{bm:"2 hari lalu",en:"2 days ago"},msgs:[{id:1,from:"in",text:"Hi! I placed an order yesterday, #ORD-2847.",time:"10:14",status:"read"},{id:2,from:"out",text:"Hello Aisha! Order #ORD-2847 is packed, delivery tomorrow 9AM–1PM 📦",time:"10:14",status:"read",ai:true,conf:97},{id:3,from:"in",text:"Oh great! What about the gift wrapping?",time:"10:18",status:"read"},{id:4,from:"out",text:"Yes, gift wrapping confirmed! 🎁 Premium silver ribbon noted.",time:"10:19",status:"read",ai:true,conf:91},{id:5,from:"in",text:"Is my order still on track for tomorrow?",time:"10:22",status:"delivered"}],suggest:"Yes, order #ORD-2847 confirmed tomorrow 9AM–1PM. Courier contacts 30 min before. Anything else?",sources:["Shipping Policy.pdf","Order FAQ.docx"],summary:{bm:"VIP sedang track #ORD-2847. Penghantaran esok + wrapping hadiah disahkan.",en:"VIP tracking #ORD-2847. Delivery tomorrow + gift wrap confirmed."}},
+  {id:"c2",name:"Benjamin Tan",  avatar:"BT",color:"#f97316",tag:"Baharu",    lead:"warm", status:"away",    lastMsg:"What's the refund policy?",     lastTime:"9:57", unread:1,pinned:false,muted:false,intent:{bm:"Pertanyaan Bayaran Balik",en:"Refund Query"},confidence:78,sentiment:"negative",orders:1,spent:"RM 299",remark:"First purchase. Handle with care — refund risk.",remarkAdded:{bm:"Hari ini",en:"Today"},msgs:[{id:1,from:"in",text:"I bought a course last week but it's not what I expected.",time:"9:55",status:"read"},{id:2,from:"in",text:"What's the refund policy for digital products?",time:"9:57",status:"read"},{id:3,from:"out",text:"Hi Benjamin! 7-day refund window if under 20% accessed. Day 6 — still eligible ✅",time:"9:58",status:"read",ai:true,conf:78},{id:4,from:"in",text:"I've only watched 2 of 40 videos.",time:"10:01",status:"read"}],suggest:"2/40 is under 20%, you qualify. Confirm checkout email — refund in 3–5 business days.",sources:["Refund Policy.pdf"],summary:{bm:"Pelanggan baharu, bayaran balik kursus digital. Masih layak.",en:"New customer, digital course refund. Within eligibility."}},
+  {id:"c3",name:"Priya Nair",    avatar:"PN",color:"#8b5cf6",tag:"Kembali",   lead:"hot",  status:"online",  lastMsg:"Do you have blue in size M?",   lastTime:"9:30", unread:0,pinned:true, muted:false,intent:{bm:"Ketersediaan Produk",en:"Product Availability"},confidence:91,sentiment:"positive",orders:8,spent:"RM 1,560",remark:"Style-conscious. Loves limited drops. DM promos work well.",remarkAdded:{bm:"1 minggu lalu",en:"1 week ago"},msgs:[{id:1,from:"in",text:"Hi! I love the Linen Wrap Dress from last month 💕",time:"9:10",status:"read"},{id:2,from:"out",text:"So glad you love it Priya! 😊 Just restocked. Looking for something specific?",time:"9:11",status:"read",ai:true,conf:95},{id:3,from:"in",text:"Do you have blue in size M?",time:"9:30",status:"read"}],suggest:"Aegean Blue size M in stock — only 3 left! 🎉 Reserve one?",sources:["Product Catalog 2025.pdf"],summary:{bm:"Pelanggan setia bernilai tinggi. 3 unit tinggal. Niat beli tinggi.",en:"Returning high-value. 3 units left. High intent — reply urgently."}},
+  {id:"c4",name:"Carlos Mendez", avatar:"CM",color:"#ef4444",tag:"Diescalate", lead:"cold", status:"offline", lastMsg:"Third time asking this!",        lastTime:"8:20", unread:3,pinned:false,muted:false,intent:{bm:"Aduan Berulang",en:"Repeat Complaint"},confidence:42,sentiment:"negative",orders:4,spent:"RM 780",remark:"Repeat damage complaint. Escalate immediately.",remarkAdded:{bm:"Hari ini",en:"Today"},msgs:[{id:1,from:"in",text:"My package arrived damaged AGAIN.",time:"8:05",status:"read"},{id:2,from:"in",text:"I reported this 2 weeks ago. Nothing happened.",time:"8:06",status:"read"},{id:3,from:"in",text:"This is the third time I'm asking! 😤",time:"8:20",status:"read"}],suggest:"Carlos, sincerely sorry. Escalated to senior team — PRIORITY. Call within 2hrs + full replacement.",sources:[],summary:{bm:"⚠ Aduan kerosakan berulang. Keyakinan AI RENDAH. Eskalasi manusia segera.",en:"⚠ Repeat damage complaint. AI confidence LOW. Human escalation required."}},
+  {id:"c5",name:"Fatimah Zahra", avatar:"FZ",color:"#0ea5e9",tag:"VIP",       lead:"hot",  status:"online",  lastMsg:"Can I get a Bali itinerary?",   lastTime:"7:45", unread:0,pinned:false,muted:true, intent:{bm:"Itinerari Tersuai",en:"Custom Itinerary"},confidence:88,sentiment:"positive",orders:23,spent:"RM 18,400",remark:"Top travel client. Books 3–4 trips/year.",remarkAdded:{bm:"3 minggu lalu",en:"3 weeks ago"},msgs:[{id:1,from:"in",text:"Hello, family of 4 planning Bali in August 🌴",time:"7:30",status:"read"},{id:2,from:"out",text:"Wonderful! Bali August is stunning. Beach, cultural, or mix?",time:"7:31",status:"read",ai:true,conf:92},{id:3,from:"in",text:"Mix! Budget RM15k for 7 nights.",time:"7:40",status:"read"},{id:4,from:"out",text:"Perfect! Custom itinerary incoming ✈️",time:"7:41",status:"read",ai:true,conf:88},{id:5,from:"in",text:"Can I get a customised Bali itinerary?",time:"7:45",status:"read"}],suggest:"7-night Bali ready! 🌺 Seminyak → Ubud → Nusa Dua. Est: RM13,800 incl. flights. Send PDF?",sources:["Bali Packages 2025.pdf"],summary:{bm:"VIP teratas. Bali keluarga Ogos, bajet RM15k. Hantar PDF itinerari sekarang.",en:"Top VIP. Family Bali Aug, RM15k budget. Send itinerary PDF now."}},
+  {id:"c6",name:"Ahmad Firdaus", avatar:"AF",color:"#10b981",tag:"Perniagaan", lead:"warm", status:"away",    lastMsg:"Need 50 units for gifting",    lastTime:"Semalam",unread:0,pinned:false,muted:false,intent:{bm:"Pesanan Pukal",en:"Bulk Order"},confidence:85,sentiment:"positive",orders:6,spent:"RM 9,200",remark:"B2B client. Responds well to quote + sample approach.",remarkAdded:{bm:"5 hari lalu",en:"5 days ago"},msgs:[{id:1,from:"in",text:"Hi, corporate gifting for team of 50.",time:"Semalam",status:"read"},{id:2,from:"out",text:"Hello Ahmad! Great packages available. Budget + preferences?",time:"Semalam",status:"read",ai:true,conf:85},{id:3,from:"in",text:"RM80-120 per person. Something premium.",time:"Semalam",status:"read"},{id:4,from:"in",text:"Need 50 units for corporate gifting",time:"Semalam",status:"read"}],suggest:"Executive Premium Set (RM95/unit). 10% discount = RM4,275. Sample first?",sources:["Corporate Catalog.pdf"],summary:{bm:"Pesanan pukal B2B 50 unit. RM80-120/orang. Peluang bernilai tinggi.",en:"B2B 50-unit bulk order. RM80-120/pax. High-value opportunity."}},
+  {id:"c7",name:"Li Wei",        avatar:"LW",color:"#f59e0b",tag:"Baharu",    lead:"cold", status:"online",  lastMsg:"How long shipping to Penang?", lastTime:"11:05",unread:1,pinned:false,muted:false,intent:{bm:"Pertanyaan Penghantaran",en:"Shipping Inquiry"},confidence:96,sentiment:"neutral",orders:0,spent:"RM 0",remark:"First contact. Nurture with welcome flow.",remarkAdded:{bm:"Hari ini",en:"Today"},msgs:[{id:1,from:"in",text:"Hi! First time ordering 😊",time:"11:00",status:"read"},{id:2,from:"out",text:"Welcome! 🎉 So glad you found us. Ask anything!",time:"11:01",status:"read",ai:true,conf:98},{id:3,from:"in",text:"How long shipping to Penang?",time:"11:05",status:"delivered"}],suggest:"Penang: 2-3 days FREE (orders RM80+) or next-day Express RM12. Which prefer? 📦",sources:["Shipping Policy.pdf"],summary:{bm:"Kenalan baharu. Pertanyaan penghantaran mudah. Potensi penukaran pertama tinggi.",en:"New contact. Simple shipping query. High first-conversion potential."}},
+];
+
+const AUTOS=[{id:"a1",name:"Selamat Datang Pelanggan Baharu",trigger:"Mesej pertama dari kenalan baharu",action:"Hantar selamat datang + kod promosi",on:true,runs:234},{id:"a2",name:"Auto-Balas Status Pesanan",trigger:"Mesej mengandungi 'pesanan' atau 'track'",action:"AI balas dengan status pesanan",on:true,runs:891},{id:"a3",name:"Balas Di Luar Waktu",trigger:"Mesej diterima 10PM–8AM",action:"Hantar notis offline + anggaran masa",on:true,runs:156},{id:"a4",name:"Eskalasi Keyakinan Rendah",trigger:"Keyakinan AI < 60%",action:"Tugaskan kepada ejen manusia",on:true,runs:47},{id:"a5",name:"Laluan Keutamaan VIP",trigger:"Tag kenalan = VIP",action:"Lalukan ke ejen kanan, KEUTAMAAN TINGGI",on:true,runs:89},{id:"a6",name:"Susulan Troli Ditinggal",trigger:"Troli terbiar > 2 jam",action:"Hantar peringatan + diskaun 10%",on:false,runs:12},{id:"a7",name:"Tinjauan CSAT",trigger:"Perbualan ditanda Selesai",action:"Hantar tinjauan kepuasan selepas 1 jam",on:true,runs:312}];
+const STATS={kpis:[{l:{bm:"Jumlah Sembang",en:"Total Chats"},v:"1,284",ch:"+12%",e:"💬"},{l:{bm:"Diselesaikan Hari Ini",en:"Resolved Today"},v:"47",ch:"+8%",e:"✅"},{l:{bm:"Masa Tindak Balas",en:"Avg Response"},v:"1m 23s",ch:"-18%",e:"⚡"},{l:{bm:"Dikendalikan AI",en:"AI Handled"},v:"78%",ch:"+5%",e:"🤖"},{l:{bm:"Skor CSAT",en:"CSAT Score"},v:"4.7★",ch:"+0.3",e:"😊"},{l:{bm:"Eskalasi",en:"Escalations"},v:"23",ch:"-7%",e:"👤"}],weekly:[42,58,47,73,61,88,94],channels:[{n:"WhatsApp",p:82,c:"#25d366"},{n:"Instagram",p:11,c:"#e1306c"},{n:"Web Chat",p:7,c:"#0088cc"}],intents:[{n:{bm:"Status Pesanan",en:"Order Status"},p:24},{n:{bm:"Pertanyaan Produk",en:"Product Inquiry"},p:21},{n:{bm:"Penghantaran",en:"Shipping"},p:15},{n:{bm:"Bayaran Balik",en:"Refund"},p:12},{n:{bm:"Pesanan Tersuai",en:"Custom Order"},p:10},{n:{bm:"Lain-lain",en:"Other"},p:18}]};
+const KBFILES=[{id:"k1",name:"Shipping Policy.pdf",size:"124 KB",chunks:18,status:"indexed",uploaded:"2 hari lalu",queries:142,acc:"97%"},{id:"k2",name:"Product Catalog 2025.pdf",size:"2.4 MB",chunks:142,status:"indexed",uploaded:"1 minggu lalu",queries:389,acc:"94%"},{id:"k3",name:"Refund & Return Policy.pdf",size:"89 KB",chunks:12,status:"indexed",uploaded:"2 hari lalu",queries:67,acc:"98%"},{id:"k4",name:"FAQ Master.docx",size:"340 KB",chunks:67,status:"indexed",uploaded:"3 hari lalu",queries:511,acc:"92%"},{id:"k5",name:"Bali Packages 2025.pdf",size:"1.1 MB",chunks:88,status:"indexed",uploaded:"5 hari lalu",queries:203,acc:"95%"},{id:"k6",name:"Family Travel Guide.pdf",size:"756 KB",chunks:54,status:"processing",uploaded:"1 jam lalu",queries:0,acc:"—"}];
+
+/* ══ BROADCASTS ══ */
+const BROADCASTS=[
+  {id:"b1",name:"Promosi Raya 2025",status:"sent",sent:1247,delivered:1198,read:876,replied:134,audience:{bm:"Semua Kenalan",en:"All Contacts"},at:"10 Apr, 9:00AM",msg:"😱 Masih bayar harga penuh untuk koleksi Raya?\n\nRamai dah jimat RM200+ dengan pakej Raya eksklusif kami!\n\n🔥 Reply 'RAYA' sekarang — stok tinggal 48 unit!"},
+  {id:"b2",name:"Follow-Up Cold Leads",status:"sent",sent:312,delivered:298,read:145,replied:23,audience:{bm:"Cold Leads",en:"Cold Leads"},at:"8 Apr, 2:00PM",msg:"Susah nak dapat order konsisten dari WhatsApp?\n\nOmniReply automate WA sales kau 24/7. 800+ bisnes Malaysia dah guna. Cuba free →"},
+  {id:"b3",name:"VIP Flash Sale",status:"scheduled",sent:0,delivered:0,read:0,replied:0,audience:{bm:"VIP sahaja",en:"VIP only"},at:"20 Mei, 10:00AM",msg:"Khas untuk VIP kami 👑\n\nFlash sale 24 jam — diskaun sehingga 40%!\n\n⚠️ Berakhir tengah malam. Reply 'VIP' sekarang."},
+  {id:"b4",name:"Welcome Warm Leads",status:"sent",sent:89,delivered:86,read:71,replied:18,audience:{bm:"Warm Leads",en:"Warm Leads"},at:"1 Apr, 11:00AM",msg:"Hi {nama}! 👋 Kami perasan anda dah tengok produk kami. Ada soalan? Kami sedia bantu 😊"},
+  {id:"b5",name:"Broadcast Uji A/B",status:"draft",sent:0,delivered:0,read:0,replied:0,audience:{bm:"Warm Leads",en:"Warm Leads"},at:"—",msg:"Draft mesej ujian untuk A/B testing — belum siap…"},
+];
+
+/* ══ CATALOG ══ */
+const CATALOG=[
+  {id:"p1",name:"Linen Wrap Dress",sku:"LWD-001",price:"RM 189",stock:12,img:"👗",cat:{bm:"Pakaian",en:"Apparel"}},
+  {id:"p2",name:"Raya Gift Set Premium",sku:"RGS-003",price:"RM 299",stock:5,img:"🎁",cat:{bm:"Hadiah",en:"Gifts"}},
+  {id:"p3",name:"Corporate Hamper",sku:"CHP-012",price:"RM 450",stock:28,img:"🧺",cat:{bm:"Korporat",en:"Corporate"}},
+  {id:"p4",name:"Bali 7N Package",sku:"BAL-2025",price:"RM 13,800",stock:-1,img:"🌴",cat:{bm:"Pelancongan",en:"Travel"}},
+  {id:"p5",name:"OmniReply Starter",sku:"SFT-001",price:"RM 99/bln",stock:-1,img:"🚀",cat:{bm:"Perisian",en:"Software"}},
+  {id:"p6",name:"Skincare Glow Kit",sku:"SGK-007",price:"RM 149",stock:0,img:"✨",cat:{bm:"Kecantikan",en:"Beauty"}},
+  {id:"p7",name:"Combo Set Raya",sku:"CSR-2025",price:"RM 189",stock:34,img:"🌙",cat:{bm:"Hadiah",en:"Gifts"}},
+  {id:"p8",name:"Travel Insurance",sku:"TIN-001",price:"RM 45",stock:-1,img:"🛡️",cat:{bm:"Pelancongan",en:"Travel"}},
+];
+
+/* ══ TEMPLATES ══ */
+const TEMPLATES=[
+  {id:"t1",name:{bm:"Selamat Datang",en:"Welcome"},cat:{bm:"Umum",en:"General"},msg:{bm:"Hai {nama}! 👋 Selamat datang ke kami. Ada soalan? Kami sedia membantu 😊",en:"Hi {name}! 👋 Welcome. Any questions? We're ready to help 😊"},uses:234},
+  {id:"t2",name:{bm:"Status Pesanan",en:"Order Status"},cat:{bm:"Operasi",en:"Operations"},msg:{bm:"Hi {nama}! Pesanan #{no} sedang diproses 📦 Penghantaran dijangka {tarikh}.",en:"Hi {name}! Order #{no} is being processed 📦 Delivery expected {date}."},uses:891},
+  {id:"t3",name:{bm:"Pengesahan Refund",en:"Refund Confirmation"},cat:{bm:"Operasi",en:"Operations"},msg:{bm:"Hi {nama}, refund {amaun} telah diproses ✅ Dalam 3–5 hari bekerja.",en:"Hi {name}, refund {amount} processed ✅ In 3–5 business days."},uses:67},
+  {id:"t4",name:{bm:"Follow-Up Hot Lead",en:"Hot Lead Follow-up"},cat:{bm:"Jualan",en:"Sales"},msg:{bm:"Hi {nama}! 🔥 Nampak you berminat dengan {produk}. Stok tinggal {stok} unit. Nak reserve?",en:"Hi {name}! 🔥 Noticed you're keen on {product}. Only {stock} left. Reserve one?"},uses:156},
+  {id:"t5",name:{bm:"Broadcast Promosi",en:"Promo Broadcast"},cat:{bm:"Pemasaran",en:"Marketing"},msg:{bm:"🎉 FLASH SALE HARI INI!\n\n{produk} — {asal} → {promosi}\n\nKod: {kod}\nReply 'BELI' 🛒",en:"🎉 FLASH SALE TODAY!\n\n{product} — {orig} → {promo}\n\nCode: {code}\nReply 'BUY' 🛒"},uses:312},
+  {id:"t6",name:{bm:"Tinjauan Kepuasan",en:"Satisfaction Survey"},cat:{bm:"Selepas Jualan",en:"Post-Sale"},msg:{bm:"Hi {nama}! Harap pengalaman anda baik 😊 Boleh bagi rating 1-5?",en:"Hi {name}! Hope your experience was great 😊 Rate us 1-5?"},uses:89},
+];
+
+/* ══ MEDIA ══ */
+const MEDIA=[
+  {id:"md1",name:"Banner Raya 2025.jpg",size:"2.1 MB",thumb:"🖼️",up:"3 hari lalu"},
+  {id:"md2",name:"Product Demo.mp4",size:"15.4 MB",thumb:"🎬",up:"1 minggu lalu"},
+  {id:"md3",name:"Katalog Produk.pdf",size:"4.2 MB",thumb:"📋",up:"2 minggu lalu"},
+  {id:"md4",name:"Logo OmniReply.png",size:"340 KB",thumb:"🖼️",up:"1 bulan lalu"},
+  {id:"md5",name:"Combo Set Raya.jpg",size:"1.8 MB",thumb:"🖼️",up:"Semalam"},
+];
+
+/* ══ CSAT ══ */
+const CSAT_BREAKDOWN=[{s:5,c:312,p:66},{s:4,c:98,p:21},{s:3,c:42,p:9},{s:2,c:14,p:3},{s:1,c:6,p:1}];
+const CSAT_REVIEWS=[
+  {id:"rv1",name:"Fatimah Zahra",avatar:"FZ",color:"#0ea5e9",rating:5,comment:{bm:"Servis terbaik! Balas dalam minit. AI sangat membantu.",en:"Best service! Replied in minutes. AI was very helpful."},time:"2 jam lalu"},
+  {id:"rv2",name:"Aisha Rahman",avatar:"AR",color:"#00a884",rating:5,comment:{bm:"Sangat puas hati. Pesanan sampai tepat masa.",en:"Very satisfied. Order arrived on time."},time:"5 jam lalu"},
+  {id:"rv3",name:"Priya Nair",avatar:"PN",color:"#8b5cf6",rating:4,comment:{bm:"Produk cantik tapi penghantaran lambat sikit.",en:"Lovely product but delivery a bit slow."},time:"Semalam"},
+  {id:"rv4",name:"Ahmad Firdaus",avatar:"AF",color:"#10b981",rating:5,comment:{bm:"Pakej korporat memuaskan. Akan order lagi!",en:"Corporate package excellent. Will reorder!"},time:"2 hari lalu"},
+  {id:"rv5",name:"Li Wei",avatar:"LW",color:"#f59e0b",rating:4,comment:{bm:"Balas cepat dan mesra. Terima kasih!",en:"Fast, friendly reply. Thanks!"},time:"3 hari lalu"},
+];
+
+/* ══ ICONS ══ */
+const Ico = ({n,s=20}) => {
+  if(n==="ai")     return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>;
+  if(n==="chat")   return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>;
+  if(n==="send")   return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>;
+  if(n==="mic")    return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 008 8.94V23h2v-2.06A9 9 0 0021 12v-2z"/></svg>;
+  if(n==="zap")    return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+  if(n==="crown")  return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M2 19h20v2H2v-2zM2 7l5 5 5-8 5 8 5-5v10H2V7z"/></svg>;
+  if(n==="pin")    return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2z"/></svg>;
+  if(n==="more")   return <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>;
+  const stroke = {
+    kb:'M4 19.5A2.5 2.5 0 016.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z',
+    chart:'M18 20V10 M12 20V4 M6 20v-6',
+    back:'M15 18l-6-6 6-6',
+    search:'M21 21l-4-4 M11 19a8 8 0 100-16 8 8 0 000 16z',
+    check:'M20 6L9 17l-5-5',
+    x:'M18 6L6 18 M6 6l12 12',
+    megaphone:'M3 11l19-9-9 19-2-8-8-2z',
+    copy:'M9 9h13v13H9z M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1',
+    upload:'M16 16l-4-4-4 4 M12 12v9 M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3',
+    edit:'M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7 M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z',
+    trash:'M3 6h18 M19 6l-1 14H6L5 6 M10 11v6 M14 11v6 M9 6V4h6v2',
+    plus:'M12 5v14 M5 12h14',
+    note:'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8',
+    info:'M12 16v-4 M12 8h.01 M12 22a10 10 0 100-20 10 10 0 000 20z',
+    attach:'M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48',
+    emoji:'M12 22a10 10 0 100-20 10 10 0 000 20z M8 14s1.5 2 4 2 4-2 4-2',
+    tick2:'M17 6L9 17l-5-5 M23 6l-8 11',
+    mute:'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45 M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25',
+    broadcast:'M3 11l18-5v12L3 14v-3z M11.6 16.8a3 3 0 11-5.8-1.6',
+    contacts:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.87 M16 3.13a4 4 0 010 7.75',
+    bell:'M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 01-3.46 0',
+    phone:'M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z',
+    mail:'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6',
+    archive:'M21 8v13H3V8 M1 3h22v5H1z M10 12h4',
+    menu:'M3 12h18 M3 6h18 M3 18h18',
+  };
+  if(n==="cog") return <svg width={s} height={s} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>;
+  if(stroke[n]) return <svg width={s} height={s} fill="none" stroke="currentColor" strokeWidth={n==="check"||n==="x"||n==="tick2"?"2.5":"1.8"} viewBox="0 0 24 24">{stroke[n].split(' M').map((p,i)=><path key={i} d={i===0?p:'M'+p}/>)}</svg>;
+  return <span style={{fontSize:s*0.6}}>•</span>;
+};
+
+const Tog = ({on,set}) => (
+  <button onClick={()=>set(!on)} style={{position:"relative",width:46,height:26,borderRadius:13,background:on?"#00a884":"#c8cdd5",border:"none",cursor:"pointer",padding:0,transition:"background .2s",flexShrink:0}}>
+    <span style={{position:"absolute",top:3,left:on?23:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px #0003"}}/>
+  </button>
+);
+const LBadge = ({l}) => { const m={hot:{c:"#ef4444",t:"🔥 Hot"},warm:{c:"#f97316",t:"🌤 Warm"},cold:{c:"#8696a0",t:"❄️ Cold"}}; const{c,t}=m[l]||m.cold; return <span style={{fontSize:10,fontWeight:700,color:c,background:c+"18",padding:"2px 7px",borderRadius:5,border:`1px solid ${c}28`,whiteSpace:"nowrap"}}>{t}</span>; };
+const TBadge = ({t}) => { const c={VIP:"#f59e0b","Kembali":"#8b5cf6","Baharu":"#00a884","Diescalate":"#ef4444","Perniagaan":"#0ea5e9"}[t]||"#8696a0"; return <span style={{fontSize:10,fontWeight:700,color:c,background:c+"18",padding:"2px 6px",borderRadius:5,whiteSpace:"nowrap"}}>{t}</span>; };
+const CBar = ({v,T,L}) => { const c=v>=85?"#00a884":v>=60?"#f59e0b":"#ef4444"; return <div><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:11,color:c,fontWeight:700}}>{v>=85?(L==="bm"?"Tinggi":"High"):v>=60?(L==="bm"?"Sederhana":"Medium"):(L==="bm"?"Rendah — Eskalasi":"Low — Escalate")}</span><span style={{fontSize:11,fontWeight:700,color:c}}>{v}%</span></div><div style={{height:6,borderRadius:3,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:`${v}%`,background:c,borderRadius:3}}/></div></div>; };
+
+/* ════════════════════════════════
+   APP
+════════════════════════════════ */
+function App() {
+  const [lang,setLang]     = useState("bm");        // bm | en
+  const [dark,setDark]     = useState(false);        // DEFAULT LIGHT
+  const [demo,setDemo]     = useState(true);
+  const [tab,setTab]       = useState("chats");
+  const [chat,setChat]     = useState(null);
+  const [aiOpen,setAiOpen] = useState(false);
+  const [remOpen,setRemOpen]= useState(false);
+  const [reply,setReply]   = useState("");
+  const [search,setSearch] = useState("");
+  const [autoR,setAutoR]   = useState(true);
+  const [autos,setAutos]   = useState(AUTOS);
+  const [settSec,setSettSec]=useState(null);
+  const [notifs,setNotifs] = useState({newMsg:true,esc:true,lowConf:true,daily:true,weekly:false});
+  const [aiCfg,setAiCfg]  = useState({auto:true,draft:false,thresh:70});
+  const [kbTab,setKbTab]   = useState("files");
+  const [selFW,setSelFW]   = useState(null);
+  const [fwTab,setFwTab]   = useState("guide");
+  const [showOB,setShowOB] = useState(true);
+  const [remTxt,setRemTxt] = useState("");
+  const [lf,setLf]         = useState("all");
+  const [showP,setShowP]   = useState(false);
+  const [annual,setAnnual] = useState(true);
+  const [copied,setCopied] = useState(null);
+  const [chatFW,setChatFW] = useState({}); // per-contact framework override
+  const [showFWPicker,setShowFWPicker] = useState(false);
+  // v7 new state
+  const [cProfile,setCProfile] = useState(null);   // contact profile view
+  const [bcView,setBcView]     = useState("list");  // broadcast: list | compose | detail
+  const [bcDetail,setBcDetail] = useState(null);
+  const [bcStep,setBcStep]     = useState(1);
+  const [bcMsg,setBcMsg]       = useState("");
+  const [bcName,setBcName]     = useState("");
+  const [bcAud,setBcAud]       = useState("all");
+  const [bcSched,setBcSched]   = useState("now");
+  const [cSearch,setCSearch]   = useState("");
+  const [cFilter,setCFilter]   = useState("all");
+  const [assTab,setAssTab]     = useState("docs");  // assets: docs|catalog|media|templates
+  const [prodDetail,setProdDetail] = useState(null);
+  const [assBalloon,setAssBalloon] = useState(false);
+  const [showDrawer,setShowDrawer] = useState(false);
+  const [showWA,setShowWA]   = useState(false);   // ConnectWA full-screen takeover
+  const [waStep,setWaStep]   = useState("risk");  // risk | qr | done
+  const [waAck,setWaAck]     = useState(false);
+  const [waLive,setWaLive]   = useState(false);
+  const ref = useRef(null);
+  const T = dark ? WA.dark : WA.light;
+  const L = lang; // "bm" or "en"
+  const C = COPY[L];
+  const contacts = demo ? CONTACTS : [];
+  const filtered = contacts.filter(c=>{
+    const ms = c.name.toLowerCase().includes(search.toLowerCase())||c.lastMsg.toLowerCase().includes(search.toLowerCase());
+    return ms && (lf==="all"||c.lead===lf);
+  });
+
+  useEffect(()=>{ if(ref.current) ref.current.scrollTop=ref.current.scrollHeight; },[chat]);
+  const cp = (text,id) => { navigator.clipboard?.writeText(text).catch(()=>{}); setCopied(id); setTimeout(()=>setCopied(null),2000); };
+
+  // Get effective framework for a contact
+  const getContactFW = (c) => chatFW[c.id] || fwForLead(c.lead);
+
+  const H = ({title,back,right}) => (
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:T.header,borderBottom:`1px solid ${T.border}`,minHeight:52,flexShrink:0}}>
+      {back&&<button onClick={back} style={{background:"none",border:"none",cursor:"pointer",color:"#00a884",padding:4,display:"flex"}}><Ico n="back" s={24}/></button>}
+      <div style={{flex:1,fontWeight:700,fontSize:17,color:T.text}}>{title}</div>
+      {right}
+    </div>
+  );
+
+  /* ── LANG TOGGLE ── */
+  const LangToggle = () => (
+    <div style={{display:"flex",alignItems:"center",background:T.card,borderRadius:20,padding:2,gap:1,border:`1px solid ${T.border}`}}>
+      {["bm","en"].map(l=>(
+        <button key={l} onClick={()=>setLang(l)} style={{padding:"3px 10px",borderRadius:16,border:"none",background:lang===l?"#00a884":"transparent",color:lang===l?"#fff":T.muted,fontSize:11,fontWeight:700,cursor:"pointer",transition:"all .15s"}}>
+          {l==="bm"?"BM":"EN"}
+        </button>
+      ))}
+    </div>
+  );
+
+  /* ── FW PICKER MODAL ── */
+  const FWPicker = () => (
+    <div style={{position:"fixed",inset:0,zIndex:2000,background:"#000000bb",display:"flex",alignItems:"flex-end"}} onClick={()=>setShowFWPicker(false)}>
+      <div style={{width:"100%",maxWidth:430,margin:"0 auto",background:T.surface,borderRadius:"20px 20px 0 0",maxHeight:"70vh",overflow:"hidden",display:"flex",flexDirection:"column"}} onClick={e=>e.stopPropagation()}>
+        <div style={{padding:"16px 16px 10px",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{fontSize:15,fontWeight:800,color:T.text}}>{C.chooseFramework}</div>
+          <button onClick={()=>setShowFWPicker(false)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:4,display:"flex"}}><Ico n="x" s={18}/></button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"8px 12px 20px"}}>
+          {FW.map(f=>{
+            const isActive = chat && getContactFW(chat).id===f.id;
+            return (
+              <div key={f.id} onClick={()=>{if(chat)setChatFW(p=>({...p,[chat.id]:f}));setShowFWPicker(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 10px",borderRadius:12,marginBottom:6,cursor:"pointer",background:isActive?f.color+"15":T.card,border:`1.5px solid ${isActive?f.color:T.border}`,transition:"all .15s"}}>
+                <div style={{width:40,height:40,borderRadius:10,background:f.color+"20",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{f.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700,color:T.text}}>{f.name}</div>
+                  <div style={{fontSize:10,color:T.muted}}>{f.cat[L]} · {f.lead==="all"?"All leads":`${f.lead} lead`}</div>
+                </div>
+                {isActive&&<span style={{fontSize:10,fontWeight:700,color:f.color,background:f.color+"15",padding:"3px 8px",borderRadius:10}}>✓ {C.fwAutoAssigned}</span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ── PRICING ── */
+  const Pricing = () => {
+    const gp = (plan) => annual ? plan.annualPrice : plan.monthlyPrice;
+    const gpd = (plan) => plan.annualPrice>0 ? (plan.annualPrice/30).toFixed(2) : null;
+    const gsave = (plan) => plan.monthlyPrice>0 ? (plan.monthlyPrice-plan.annualPrice)*12 : 0;
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:999,background:T.bg,display:"flex",flexDirection:"column",maxWidth:430,margin:"0 auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+          <button onClick={()=>setShowP(false)} style={{background:"none",border:"none",cursor:"pointer",color:"#00a884",display:"flex",padding:4}}><Ico n="back" s={24}/></button>
+          <div style={{flex:1,fontWeight:700,fontSize:17,color:T.text}}>{C.pricingTitle}</div>
+          <LangToggle/>
+          <span style={{fontSize:10,color:"#00a884",fontWeight:700,background:"#00a88415",padding:"3px 8px",borderRadius:6,marginLeft:4}}>{C.freeTrial}</span>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"14px 14px 30px"}}>
+          {/* Billing toggle */}
+          <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,padding:"12px 14px",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{C.billing}</div>
+                <div style={{fontSize:11,color:annual?"#00a884":"#f97316",fontWeight:600,marginTop:2}}>{annual?C.billingAnnual:C.billingMonthly}</div>
+              </div>
+              <Tog on={annual} set={setAnnual}/>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <div onClick={()=>setAnnual(true)} style={{flex:1,padding:"9px 10px",borderRadius:10,border:`2px solid ${annual?"#00a884":T.border}`,background:annual?"#00a88412":"transparent",cursor:"pointer",textAlign:"center"}}>
+                <div style={{fontSize:12,fontWeight:700,color:annual?"#00a884":T.text}}>{C.annual}</div>
+                <div style={{fontSize:10,color:annual?"#00a884":T.muted}}>{C.payFor10}</div>
+                <div style={{fontSize:10,fontWeight:700,color:"#00a884",marginTop:1}}>{C.save17}</div>
+              </div>
+              <div onClick={()=>setAnnual(false)} style={{flex:1,padding:"9px 10px",borderRadius:10,border:`2px solid ${!annual?"#f97316":T.border}`,background:!annual?"#f9731612":"transparent",cursor:"pointer",textAlign:"center"}}>
+                <div style={{fontSize:12,fontWeight:700,color:!annual?"#f97316":T.text}}>{C.monthly}</div>
+                <div style={{fontSize:10,color:!annual?"#f97316":T.muted}}>{C.moreFlexible}</div>
+                <div style={{fontSize:10,fontWeight:700,color:"#f97316",marginTop:1}}>{C.extraPerMonth}</div>
+              </div>
+            </div>
+          </div>
+          {/* Plans */}
+          {PLANS.map(plan=>{
+            const price=gp(plan); const perDay=gpd(plan); const saving=gsave(plan);
+            const isCurr=plan.id==="free"; const isSt=plan.id==="starter"; const isGr=plan.id==="growth";
+            return (
+              <div key={plan.id} style={{background:T.surface,border:`2px solid ${isGr?"#6366f1":isSt?"#00a884":T.border}`,borderRadius:16,padding:14,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                {plan.badge&&<div style={{position:"absolute",top:0,right:0,background:isGr?"#6366f1":"#00a884",color:"#fff",fontSize:10,fontWeight:800,padding:"4px 14px",borderRadius:"0 14px 0 10px"}}>{plan.badge[L]}</div>}
+                <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:10}}>
+                  <div style={{width:44,height:44,borderRadius:12,background:plan.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{plan.icon}</div>
+                  <div style={{flex:1}}><div style={{fontSize:15,fontWeight:800,color:T.text}}>{plan.name[L]}</div><div style={{fontSize:11,color:T.muted}}>{plan.tagline[L]}</div></div>
+                  <div style={{textAlign:"right"}}>
+                    {price===0?<div style={{fontSize:20,fontWeight:800,color:T.text}}>{C.freeForever}</div>:<>
+                      <div style={{fontSize:24,fontWeight:800,color:plan.color,lineHeight:1}}>RM{price}<span style={{fontSize:11,fontWeight:400,color:T.muted}}>/bln</span></div>
+                      {annual?<div style={{fontSize:10,color:T.muted,marginTop:1}}>RM{plan.annualPrice*12}/thn</div>:<div style={{fontSize:10,color:"#f97316",marginTop:1}}>RM{plan.annualPrice}/bln {L==="bm"?"jika tahunan":"if annual"}</div>}
+                    </>}
+                  </div>
+                </div>
+                {perDay&&(
+                  <div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap"}}>
+                    <div style={{flex:1,background:plan.color+"12",border:`1px solid ${plan.color}22`,borderRadius:10,padding:"7px 10px",textAlign:"center"}}>
+                      <div style={{fontSize:10,color:T.muted,marginBottom:1}}>{C.lowestPrice}</div>
+                      <div style={{fontSize:17,fontWeight:800,color:plan.color}}>RM{perDay}</div>
+                      <div style={{fontSize:9,color:T.muted}}>{C.perDay}</div>
+                    </div>
+                    {saving>0&&annual&&<div style={{flex:1,background:"#00a88412",border:"1px solid #00a88822",borderRadius:10,padding:"7px 10px",textAlign:"center"}}>
+                      <div style={{fontSize:10,color:T.muted,marginBottom:1}}>{C.savePerYear}</div>
+                      <div style={{fontSize:17,fontWeight:800,color:"#00a884"}}>RM{saving}</div>
+                      <div style={{fontSize:9,color:T.muted}}>{C.vsMonthly}</div>
+                    </div>}
+                    {saving>0&&!annual&&<div style={{flex:1,background:"#f9731612",border:"1px solid #f9731622",borderRadius:10,padding:"7px 10px",textAlign:"center"}}>
+                      <div style={{fontSize:10,color:T.muted,marginBottom:1}}>{C.canSave}</div>
+                      <div style={{fontSize:17,fontWeight:800,color:"#f97316"}}>RM{saving}</div>
+                      <div style={{fontSize:9,color:T.muted}}>{C.ifAnnual}</div>
+                    </div>}
+                  </div>
+                )}
+                <div style={{display:"flex",gap:5,marginBottom:10,flexWrap:"wrap"}}>
+                  {[plan.contacts===-1?(L==="bm"?"✅ Kenalan tanpa had":"✅ Unlimited contacts"):`✅ ${plan.contacts} ${L==="bm"?"kenalan":"contact"}`,plan.agents===-1?(L==="bm"?"✅ Ejen tanpa had":"✅ Unlimited agents"):`✅ ${plan.agents} ${L==="bm"?"ejen":"agent"}`,`⚡ ${plan.aiMsg} AI msg/bln`].map((t,i)=>(
+                    <span key={i} style={{fontSize:9,fontWeight:600,color:T.muted,background:T.card,padding:"3px 8px",borderRadius:14,border:`1px solid ${T.border}`}}>{t}</span>
+                  ))}
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
+                  {plan.features[L].map((f,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:7}}>
+                      <div style={{width:15,height:15,borderRadius:"50%",background:f.ok?"#00a88420":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{f.ok?<span style={{color:"#00a884",display:"flex"}}><Ico n="check" s={10}/></span>:<span style={{color:"#8696a045",fontSize:11}}>—</span>}</div>
+                      <span style={{fontSize:12,color:f.ok?T.text:T.muted}}>{f.t}</span>
+                    </div>
+                  ))}
+                </div>
+                {isCurr?<div style={{textAlign:"center",padding:"9px 0",fontSize:12,color:T.muted}}>✅ {C.currentPlan}</div>
+                :<button style={{width:"100%",padding:12,background:isGr?"#6366f1":isSt?"#00a884":T.card,border:`1px solid ${isGr?"#6366f1":isSt?"#00a884":T.border}`,borderRadius:12,color:(isGr||isSt)?"#fff":T.text,fontSize:13,fontWeight:700,cursor:"pointer"}}>{plan.cta[L]}{annual&&price>0?" — "+C.annual:""}</button>}
+              </div>
+            );
+          })}
+          {/* FAQ */}
+          <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,padding:14}}>
+            <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:12}}>{C.faq}</div>
+            {C.faqQ.map((q,i)=>(
+              <div key={i} style={{marginBottom:i<C.faqQ.length-1?11:0,paddingBottom:i<C.faqQ.length-1?11:0,borderBottom:i<C.faqQ.length-1?`1px solid ${T.divider}`:"none"}}>
+                <div style={{fontSize:12,fontWeight:600,color:T.text,marginBottom:2}}>{q}</div>
+                <div style={{fontSize:11,color:T.muted,lineHeight:1.6}}>{C.faqA[i]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── MARKETING ── */
+  const Marketing = () => {
+    if(selFW){
+      const f=selFW;
+      return (
+        <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+          <H title={f.name} back={()=>{setSelFW(null);setFwTab("guide");}} right={<LangToggle/>}/>
+          <div style={{display:"flex",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+            {[["guide",C.howToUse],["example",C.fullExample]].map(([k,l])=>(
+              <button key={k} onClick={()=>setFwTab(k)} style={{flex:1,padding:"10px 0",background:"none",border:"none",borderBottom:`2px solid ${fwTab===k?f.color:"transparent"}`,color:fwTab===k?f.color:T.muted,fontSize:12,fontWeight:fwTab===k?700:400,cursor:"pointer"}}>{l}</button>
+            ))}
+          </div>
+          <div style={{flex:1,overflowY:"auto",padding:14}}>
+            {fwTab==="guide"&&(<>
+              <div style={{background:f.color+"15",border:`1px solid ${f.color}30`,borderRadius:14,padding:14,marginBottom:12}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><span style={{fontSize:26}}>{f.icon}</span><div><div style={{fontSize:15,fontWeight:800,color:T.text}}>{f.name}</div><span style={{fontSize:10,fontWeight:700,color:f.color,background:f.color+"18",padding:"2px 8px",borderRadius:5}}>{f.cat[L]}</span></div></div>
+                <div style={{fontSize:12,color:T.text,lineHeight:1.7,marginBottom:8}}>{f.desc[L]}</div>
+                <div style={{background:f.color+"10",border:`1px solid ${f.color}18`,borderRadius:9,padding:"8px 10px"}}>
+                  <div style={{fontSize:9,fontWeight:800,color:f.color,marginBottom:3}}>{C.whenToUse}</div>
+                  <div style={{fontSize:12,color:T.text,lineHeight:1.5}}>{f.whenToUse[L]}</div>
+                </div>
+              </div>
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:12,marginBottom:12,display:"flex",gap:10}}>
+                <div style={{flex:1}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:5}}>{L==="bm"?"SESUAI UNTUK LEAD":"BEST FOR LEAD TYPE"}</div><div style={{display:"flex",gap:5,flexWrap:"wrap"}}>{f.lead==="all"?["❄️ Cold","🌤 Warm","🔥 Hot"].map(l=><span key={l} style={{fontSize:10,fontWeight:700,color:"#00a884",background:"#00a88415",padding:"2px 8px",borderRadius:12}}>{l}</span>):<LBadge l={f.lead}/>}</div></div>
+                <div style={{flex:1}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:5}}>{L==="bm"?"GUNA UNTUK":"USE FOR"}</div>{f.uses[L].map(u=><div key={u} style={{fontSize:10,color:T.muted,marginBottom:2}}>✓ {u}</div>)}</div>
+              </div>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:8}}>{L==="bm"?"📋 Langkah-langkah":"📋 Steps"}</div>
+              {f.steps.map((step,i)=>(
+                <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:13,padding:13,marginBottom:10}}>
+                  <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:9}}><div style={{width:30,height:30,borderRadius:"50%",background:step.c+"20",border:`2px solid ${step.c}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:step.c,flexShrink:0}}>{i+1}</div><span style={{fontSize:14,fontWeight:800,color:T.text}}>{step.s[L]}</span><span style={{fontSize:16}}>{step.e}</span></div>
+                  <div style={{fontSize:12,color:T.text,lineHeight:1.6,marginBottom:7,paddingLeft:39}}>{step.d[L]}</div>
+                  <div style={{background:step.c+"10",border:`1px solid ${step.c}18`,borderRadius:8,padding:"7px 9px",marginLeft:39,marginBottom:8}}><div style={{fontSize:9,fontWeight:800,color:step.c,marginBottom:2}}>{C.proTip}</div><div style={{fontSize:11,color:T.text,lineHeight:1.5}}>{step.tip[L]}</div></div>
+                  <div style={{background:T.card,borderRadius:9,padding:10,marginLeft:39,marginBottom:7}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}><div style={{fontSize:9,fontWeight:800,color:"#00a884"}}>{C.goodExample}</div><button onClick={()=>cp(step.good,`${f.id}-${i}`)} style={{background:copied===`${f.id}-${i}`?"#00a884":"transparent",border:`1px solid ${copied===`${f.id}-${i}`?"#00a884":T.border}`,borderRadius:5,padding:"2px 7px",cursor:"pointer",color:copied===`${f.id}-${i}`?"#fff":T.muted,fontSize:9,fontWeight:700}}>{copied===`${f.id}-${i}`?"✓ Copied!":"Copy"}</button></div>
+                    <div style={{fontSize:12,color:T.text,lineHeight:1.7,whiteSpace:"pre-line",background:dark?"#005c4b30":"#d9fdd350",padding:"7px 9px",borderRadius:7,borderLeft:`3px solid #00a884`}}>{step.good}</div>
+                  </div>
+                  <div style={{background:"#ef444408",border:"1px solid #ef444415",borderRadius:8,padding:"7px 9px",marginLeft:39}}><div style={{fontSize:9,fontWeight:800,color:"#ef4444",marginBottom:2}}>{C.dontDo}</div><div style={{fontSize:11,color:T.text,lineHeight:1.5,fontStyle:"italic"}}>{step.bad[L]}</div></div>
+                </div>
+              ))}
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:12}}><div style={{fontSize:10,fontWeight:700,color:T.muted,marginBottom:8}}>{L==="bm"?"📌 SESUAI UNTUK":"📌 USE THIS FOR"}</div><div style={{display:"flex",flexWrap:"wrap",gap:5}}>{f.uses[L].map(u=><span key={u} style={{fontSize:11,color:T.text,background:T.card,border:`1px solid ${T.border}`,padding:"4px 11px",borderRadius:18}}>✓ {u}</span>)}</div></div>
+            </>)}
+            {fwTab==="example"&&(<>
+              <div style={{background:f.color+"10",border:`1px solid ${f.color}22`,borderRadius:14,padding:13,marginBottom:12}}>
+                <div style={{fontSize:12,fontWeight:800,color:f.color,marginBottom:9}}>📱 {f.fullTitle[L]}</div>
+                <div style={{background:dark?"#1f2c34":"#fff",borderRadius:9,padding:10,marginBottom:9}}>
+                  <div style={{background:dark?"#005c4b":"#d9fdd3",borderRadius:"8px 8px 0 8px",padding:"9px 11px 20px",position:"relative",fontSize:13,lineHeight:1.7,color:T.text,whiteSpace:"pre-line"}}>
+                    {f.full}
+                    <div style={{position:"absolute",bottom:4,right:9,fontSize:9,color:dark?"#8fbd88":"#667781"}}>Delivered ✓✓</div>
+                  </div>
+                </div>
+                <button onClick={()=>cp(f.full,"full")} style={{width:"100%",padding:"10px",background:copied==="full"?"#00a884":f.color+"20",border:`1px solid ${copied==="full"?"#00a884":f.color}30`,borderRadius:9,color:copied==="full"?"#fff":f.color,fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  {copied==="full"?"✅ Copied! Paste dalam WhatsApp":"📋 Copy Mesej Penuh"}
+                </button>
+              </div>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:9}}>{C.stepBreakdown}</div>
+              {f.steps.map((step,i)=>(
+                <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:11,marginBottom:7,display:"flex",gap:9}}>
+                  <div style={{width:26,height:26,borderRadius:"50%",background:step.c+"20",border:`2px solid ${step.c}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:step.c,flexShrink:0}}>{i+1}</div>
+                  <div><div style={{fontSize:11,fontWeight:700,color:T.text,marginBottom:2}}>{step.s[L]} {step.e}</div><div style={{fontSize:11,color:T.muted,lineHeight:1.5}}>{step.d[L]}</div></div>
+                </div>
+              ))}
+              <div style={{background:"#00a88412",border:"1px solid #00a88822",borderRadius:13,padding:14,marginTop:4}}>
+                <div style={{fontSize:13,fontWeight:800,color:T.text,marginBottom:4}}>{L==="bm"?"🤖 Nak AI draft untuk bisnes kau?":"🤖 Want AI to draft for your business?"}</div>
+                <div style={{fontSize:11,color:T.muted,lineHeight:1.6,marginBottom:10}}>{L==="bm"?"Pergi ke Peti Masuk → buka perbualan → tap AI → AI akan suggest balasan yang sesuai secara automatik.":"Go to Inbox → open a conversation → tap AI → AI will automatically suggest a suitable reply."}</div>
+                <button onClick={()=>{setSelFW(null);setTab("chats");}} style={{width:"100%",padding:11,background:"#00a884",border:"none",borderRadius:9,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>{C.tryInInbox}</button>
+              </div>
+            </>)}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={L==="bm"?"AI Pemasaran":"AI Marketing"} right={<LangToggle/>}/>
+        <div style={{flex:1,overflowY:"auto",padding:14}}>
+          <div style={{background:"#00a88412",border:"1px solid #00a88822",borderRadius:13,padding:14,marginBottom:14}}>
+            <div style={{fontSize:14,fontWeight:800,color:T.text,marginBottom:4}}>📣 {L==="bm"?"6 Rangka Kerja Pemasaran":"6 Marketing Frameworks"}</div>
+            <div style={{fontSize:12,color:T.muted,lineHeight:1.6}}>{L==="bm"?"Formula terbukti dari pemasar terbaik dunia. Setiap rangka kerja ada ":"Proven formulas from world's top marketers. Each framework has "}<span style={{color:T.text,fontWeight:600}}>{L==="bm"?"cara guna + contoh WA real":"how-to guide + real WA examples"}</span>{L==="bm"?" yang boleh terus copy-paste.":" ready to copy-paste."}</div>
+          </div>
+          {FW.map(f=>(
+            <div key={f.id} onClick={()=>{setSelFW(f);setFwTab("guide");}} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:13,padding:14,marginBottom:9,cursor:"pointer"}}>
+              <div style={{display:"flex",alignItems:"flex-start",gap:11,marginBottom:9}}>
+                <div style={{width:44,height:44,borderRadius:11,background:f.color+"15",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{f.icon}</div>
+                <div style={{flex:1}}><div style={{fontSize:14,fontWeight:800,color:T.text,marginBottom:2}}>{f.name}</div><span style={{fontSize:9,fontWeight:700,color:f.color,background:f.color+"15",padding:"2px 7px",borderRadius:5}}>{f.cat[L]}</span></div>
+                <LBadge l={f.lead==="all"?"hot":f.lead}/>
+              </div>
+              <div style={{fontSize:12,color:T.muted,lineHeight:1.6,marginBottom:9}}>{f.desc[L]}</div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>{f.steps.map((s,i)=><span key={i} style={{fontSize:9,color:s.c,background:s.c+"15",padding:"2px 7px",borderRadius:9,fontWeight:700}}>{i+1}. {s.s[L]}</span>)}</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",gap:4}}>{f.uses[L].slice(0,2).map(u=><span key={u} style={{fontSize:9,color:T.muted,background:T.card,padding:"2px 6px",borderRadius:5}}>✓ {u}</span>)}</div>
+                <span style={{fontSize:11,color:"#00a884",fontWeight:700}}>{L==="bm"?"Buka Panduan →":"Open Guide →"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ── CHAT LIST ── */
+  const ChatList = () => (
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.surface}}>
+      <div style={{padding:"10px 12px 8px",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:20,fontWeight:800,color:T.text}}>{C.inbox}</span>
+          <div style={{display:"flex",gap:5,alignItems:"center"}}>
+            <LangToggle/>
+            <button onClick={()=>setShowOB(true)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 9px",cursor:"pointer",color:T.muted,fontSize:10,fontWeight:600}}>{C.setupGuide}</button>
+            <button onClick={()=>setShowP(true)} style={{background:"#00a88415",border:"1px solid #00a88830",borderRadius:8,padding:"4px 9px",cursor:"pointer",color:"#00a884",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",gap:3}}><Ico n="crown" s={11}/>{C.upgrade}</button>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,background:T.input,borderRadius:8,padding:"6px 10px",marginBottom:7}}>
+          <span style={{color:T.muted,display:"flex"}}><Ico n="search" s={14}/></span>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={C.search} style={{background:"none",border:"none",outline:"none",fontSize:13,color:T.text,flex:1,fontFamily:"inherit"}}/>
+        </div>
+        <div style={{display:"flex",gap:5,overflowX:"auto",paddingBottom:2}}>
+          {[["all",C.all,"#8696a0"],["hot","🔥 Hot","#ef4444"],["warm","🌤 Warm","#f97316"],["cold","❄️ Cold","#8696a0"]].map(([k,l,c])=>(
+            <button key={k} onClick={()=>setLf(k)} style={{padding:"3px 10px",borderRadius:18,border:`1px solid ${lf===k?c:T.border}`,background:lf===k?c+"18":"transparent",color:lf===k?c:T.muted,fontSize:11,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1,overflowY:"auto"}}>
+        {filtered.length===0
+          ? <div style={{padding:40,textAlign:"center",color:T.muted}}><div style={{fontSize:28,marginBottom:8}}>💬</div><div style={{fontSize:13,fontWeight:600,color:T.text,marginBottom:4}}>{L==="bm"?"Tiada perbualan":"No conversations"}</div><div style={{fontSize:11}}>{L==="bm"?"Aktifkan Mod Demo dalam Tetapan":"Enable Demo Mode in Settings"}</div></div>
+          : filtered.map(c=>{
+            const cfw = getContactFW(c);
+            return (
+              <div key={c.id} onClick={()=>{setChat(c);setRemTxt(c.remark||"");}} style={{display:"flex",gap:11,padding:"10px 13px",borderBottom:`1px solid ${T.divider}`,cursor:"pointer",alignItems:"center"}}>
+                <div style={{position:"relative",flexShrink:0}}>
+                  <div style={{width:48,height:48,borderRadius:"50%",background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:c.color}}>{c.avatar}</div>
+                  <div style={{position:"absolute",bottom:1,right:1,width:11,height:11,borderRadius:"50%",background:c.status==="online"?"#25d366":c.status==="away"?"#f59e0b":"#8696a0",border:`2px solid ${T.surface}`}}/>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:2,alignItems:"center"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      {c.pinned&&<span style={{color:T.muted,transform:"rotate(45deg)",display:"inline-flex"}}><Ico n="pin" s={9}/></span>}
+                      {c.muted&&<span style={{color:T.muted,fontSize:11}}>🔇</span>}
+                      <span style={{fontSize:14,fontWeight:600,color:T.text}}>{c.name}</span>
+                    </div>
+                    <span style={{fontSize:10,color:c.unread>0?"#00a884":T.muted,flexShrink:0}}>{c.lastTime}</span>
+                  </div>
+                  <div style={{fontSize:11,color:T.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.lastMsg}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:3,flexWrap:"wrap"}}>
+                    <TBadge t={c.tag}/><LBadge l={c.lead}/>
+                    {/* Framework badge */}
+                    <span style={{fontSize:9,color:cfw.color,background:cfw.color+"15",padding:"1px 6px",borderRadius:8,fontWeight:700,border:`1px solid ${cfw.color}25`}}>{cfw.icon} {cfw.name}</span>
+                    {c.unread>0&&<span style={{marginLeft:"auto",width:18,height:18,borderRadius:"50%",background:"#00a884",color:"#fff",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{c.unread}</span>}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  );
+
+  /* ── CHAT VIEW ── */
+  const ChatView = () => {
+    const c = chat;
+    const cfw = getContactFW(c);
+    return (
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.subBg}}>
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",gap:7,padding:"8px 11px",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+          <button onClick={()=>{setChat(null);setAiOpen(false);setRemOpen(false);setShowFWPicker(false);}} style={{background:"none",border:"none",cursor:"pointer",color:"#00a884",padding:4,display:"flex"}}><Ico n="back" s={22}/></button>
+          <div style={{width:34,height:34,borderRadius:"50%",background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:c.color,flexShrink:0}}>{c.avatar}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}><span style={{fontSize:13,fontWeight:700,color:T.text}}>{c.name}</span><TBadge t={c.tag}/><LBadge l={c.lead}/></div>
+            <div style={{fontSize:10,color:c.status==="online"?"#25d366":T.muted}}>{C[c.status]||c.status}</div>
+          </div>
+          {/* Framework badge — tappable */}
+          <button onClick={()=>setShowFWPicker(true)} style={{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:8,background:cfw.color+"15",border:`1px solid ${cfw.color}30`,cursor:"pointer",flexShrink:0}}>
+            <span style={{fontSize:13}}>{cfw.icon}</span>
+            <span style={{fontSize:10,fontWeight:700,color:cfw.color,maxWidth:50,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cfw.name}</span>
+          </button>
+          <button onClick={()=>{setRemOpen(v=>!v);setAiOpen(false);}} style={{background:remOpen?"#f59e0b18":"none",border:`1px solid ${remOpen?"#f59e0b40":"transparent"}`,borderRadius:7,padding:"4px 7px",cursor:"pointer",color:remOpen?"#f59e0b":T.muted,display:"flex",alignItems:"center",gap:2,fontSize:10,fontWeight:700}}><Ico n="note" s={12}/>{C.note}</button>
+          <button onClick={()=>{setAiOpen(v=>!v);setRemOpen(false);}} style={{background:aiOpen?"#00a88420":"none",border:`1px solid ${aiOpen?"#00a88445":"transparent"}`,borderRadius:7,padding:"4px 7px",cursor:"pointer",color:aiOpen?"#00a884":T.muted,display:"flex",alignItems:"center",gap:2,fontSize:10,fontWeight:700}}><Ico n="ai" s={12}/>{C.ai}</button>
+          <Tog on={autoR} set={setAutoR}/>
+        </div>
+
+        {/* Remark panel */}
+        {remOpen&&(
+          <div style={{background:dark?"#1a1f00":"#fffde7",borderBottom:"1px solid #f59e0b28",padding:"11px 13px",flexShrink:0}}>
+            <div style={{fontSize:10,fontWeight:800,color:"#f59e0b",marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span>📝 {C.agentRemarks} · {c.remarkAdded[L]}</span>
+              {/* Framework change button inside note panel */}
+              <button onClick={()=>setShowFWPicker(true)} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 8px",borderRadius:7,background:cfw.color+"18",border:`1px solid ${cfw.color}30`,cursor:"pointer",color:cfw.color,fontSize:10,fontWeight:700}}>
+                {cfw.icon} {C.fwChangeBtn}
+              </button>
+            </div>
+            {/* Framework applied info */}
+            <div style={{background:cfw.color+"10",border:`1px solid ${cfw.color}20`,borderRadius:8,padding:"6px 9px",marginBottom:8,display:"flex",alignItems:"center",gap:7}}>
+              <span style={{fontSize:16}}>{cfw.icon}</span>
+              <div>
+                <div style={{fontSize:10,fontWeight:700,color:cfw.color}}>{C.frameworkApplied}: {cfw.name}</div>
+                <div style={{fontSize:10,color:T.muted}}>{cfw.desc[L].slice(0,60)}…</div>
+              </div>
+            </div>
+            <textarea value={remTxt} onChange={e=>setRemTxt(e.target.value)} rows={2} style={{width:"100%",background:"transparent",border:"1px solid #f59e0b28",borderRadius:7,padding:"7px 9px",fontSize:12,color:T.text,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.6,boxSizing:"border-box"}}/>
+            <div style={{display:"flex",gap:5,marginTop:6}}>
+              {[["🔥 Hot","hot","#ef4444"],["🌤 Warm","warm","#f97316"],["❄️ Cold","cold","#8696a0"]].map(([l,v,col])=>(
+                <button key={v} style={{padding:"3px 9px",borderRadius:7,fontSize:10,fontWeight:700,border:`1px solid ${col}35`,background:c.lead===v?col+"18":"transparent",color:c.lead===v?col:T.muted,cursor:"pointer"}}>{l}</button>
+              ))}
+              <button onClick={()=>setRemOpen(false)} style={{marginLeft:"auto",padding:"3px 11px",borderRadius:7,fontSize:11,fontWeight:700,background:"#00a884",color:"#fff",border:"none",cursor:"pointer"}}>{C.save}</button>
+            </div>
+          </div>
+        )}
+
+        {/* AI panel */}
+        {aiOpen&&(
+          <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,maxHeight:290,overflowY:"auto",flexShrink:0}}>
+            <div style={{padding:"9px 13px",display:"flex",alignItems:"center",gap:5,borderBottom:`1px solid ${T.divider}`}}>
+              <span style={{color:"#00a884",display:"flex"}}><Ico n="ai" s={13}/></span>
+              <span style={{fontSize:12,fontWeight:700,color:T.text}}>AI Insights</span>
+              <span style={{fontSize:9,color:T.muted,marginLeft:"auto"}}>GPT-4o</span>
+            </div>
+            <div style={{padding:"11px 13px",display:"flex",flexDirection:"column",gap:9}}>
+              <div style={{background:T.card,borderRadius:9,padding:11}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:7}}>{C.confidence}</div><CBar v={c.confidence} T={T} L={L}/>{c.confidence<60&&<div style={{marginTop:7,fontSize:10,color:"#ef4444",background:"#ef444410",borderRadius:6,padding:"4px 8px"}}>⚠ {L==="bm"?"Semakan manusia diperlukan":"Human review required"}</div>}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+                <div style={{background:T.card,borderRadius:9,padding:11}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:3}}>{C.intent}</div><div style={{fontSize:11,fontWeight:600,color:T.text,marginBottom:3}}>{c.intent[L]}</div><div style={{fontSize:10,color:c.sentiment==="positive"?"#00a884":c.sentiment==="negative"?"#ef4444":"#f59e0b"}}>{c.sentiment==="positive"?"😊 Positif":c.sentiment==="negative"?"😠 Negatif":"😐 Neutral"}</div></div>
+                <div style={{background:T.card,borderRadius:9,padding:11}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:3}}>{C.profile}</div><div style={{fontSize:10,color:T.text,marginBottom:2}}>{c.orders} {L==="bm"?"pesanan":"orders"}</div><div style={{fontSize:11,color:"#00a884",fontWeight:700}}>{c.spent}</div></div>
+              </div>
+              <div style={{background:"#00a88410",borderRadius:9,padding:11,border:"1px solid #00a88828"}}>
+                <div style={{fontSize:9,fontWeight:700,color:"#00a884",marginBottom:5,display:"flex",alignItems:"center",gap:3}}><Ico n="ai" s={9}/>{C.suggestedReply}</div>
+                <div style={{fontSize:12,color:T.text,lineHeight:1.7,marginBottom:7}}>{c.suggest}</div>
+                <button onClick={()=>{setReply(c.suggest);setAiOpen(false);}} style={{width:"100%",padding:"7px",borderRadius:7,background:"#00a884",color:"#fff",border:"none",fontSize:12,fontWeight:700,cursor:"pointer"}}>{C.useReply}</button>
+              </div>
+              {c.sources.length>0&&<div style={{background:T.card,borderRadius:9,padding:11}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:5}}>{C.sources}</div>{c.sources.map(s=><div key={s} style={{fontSize:11,color:T.text,marginBottom:3}}>📄 {s}</div>)}</div>}
+              <div style={{background:T.card,borderRadius:9,padding:11}}><div style={{fontSize:9,fontWeight:700,color:T.muted,marginBottom:4}}>{C.summary}</div><div style={{fontSize:11,color:T.text,lineHeight:1.7}}>{c.summary[L]}</div></div>
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
+        <div ref={ref} style={{flex:1,overflowY:"auto",padding:"11px 9px",display:"flex",flexDirection:"column",gap:2}}>
+          <div style={{textAlign:"center",marginBottom:7}}><span style={{fontSize:10,color:T.muted,background:T.card,padding:"2px 9px",borderRadius:5}}>{C.today}</span></div>
+          {c.msgs.map(m=>(
+            <div key={m.id} style={{display:"flex",flexDirection:m.from==="in"?"row":"row-reverse",marginBottom:2}}>
+              <div style={{maxWidth:"78%"}}>
+                <div style={{background:m.from==="in"?T.msgIn:T.msgOut,padding:"8px 10px 18px",borderRadius:m.from==="in"?"0 8px 8px 8px":"8px 0 8px 8px",fontSize:13,lineHeight:1.6,color:T.text,boxShadow:"0 1px 2px #0002",position:"relative",minWidth:70}}>
+                  {m.ai&&<div style={{fontSize:9,color:"#00a884",fontWeight:700,marginBottom:2,display:"flex",alignItems:"center",gap:2}}><Ico n="ai" s={9}/>AI · {m.conf}% conf</div>}
+                  {m.text}
+                  <div style={{position:"absolute",bottom:3,right:7,display:"flex",alignItems:"center",gap:2}}>
+                    <span style={{fontSize:9,color:m.from==="in"?T.muted:"#8fbd88"}}>{m.time}</span>
+                    {m.from==="out"&&<span style={{color:m.status==="read"?"#53bdeb":"#8fbd88",display:"flex"}}><Ico n="tick2" s={11}/></span>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div style={{padding:"5px 7px",background:T.header,borderTop:`1px solid ${T.border}`,display:"flex",alignItems:"flex-end",gap:5,flexShrink:0}}>
+          <button style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:5,display:"flex"}}><Ico n="emoji" s={20}/></button>
+          <button style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:5,display:"flex"}}><Ico n="attach" s={20}/></button>
+          <div style={{flex:1,background:T.input,borderRadius:18,padding:"7px 12px",display:"flex",alignItems:"center",gap:5}}>
+            <textarea value={reply} onChange={e=>setReply(e.target.value)} placeholder={C.typeMsg} rows={1} style={{flex:1,background:"none",border:"none",outline:"none",fontSize:13,color:T.text,resize:"none",fontFamily:"inherit",lineHeight:1.4,maxHeight:70}}/>
+            {reply.length===0&&<button onClick={()=>setReply(c.suggest)} style={{display:"flex",alignItems:"center",gap:2,fontSize:10,color:"#00a884",background:"#00a88415",border:"1px solid #00a88828",borderRadius:6,padding:"2px 6px",cursor:"pointer",fontWeight:700,whiteSpace:"nowrap"}}><Ico n="ai" s={9}/>{C.draft}</button>}
+          </div>
+          <button style={{width:40,height:40,borderRadius:"50%",background:"#00a884",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",flexShrink:0}}>
+            {reply.length>0?<Ico n="send" s={18}/>:<Ico n="mic" s={18}/>}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── KB ── */
+  const KB = () => (
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+      <H title={C.kb} right={<div style={{display:"flex",gap:6,alignItems:"center"}}><LangToggle/><button style={{display:"flex",alignItems:"center",gap:4,padding:"6px 11px",background:"#00a884",border:"none",borderRadius:7,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}><Ico n="upload" s={13}/>{C.upload}</button></div>}/>
+      <div style={{display:"flex",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+        {[["files",C.myFiles],["guide",C.uploadGuide]].map(([k,l])=>(
+          <button key={k} onClick={()=>setKbTab(k)} style={{flex:1,padding:"10px 0",background:"none",border:"none",borderBottom:`2px solid ${kbTab===k?"#00a884":"transparent"}`,color:kbTab===k?"#00a884":T.muted,fontSize:12,fontWeight:kbTab===k?700:400,cursor:"pointer"}}>{l}</button>
+        ))}
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:13}}>
+        {kbTab==="files"&&(<>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}}>
+            {[["7",L==="bm"?"Fail 📄":"Files 📄"],["420",L==="bm"?"Bahagian 🧩":"Chunks 🧩"],["1,400",L==="bm"?"Pertanyaan 🔍":"Queries 🔍"],["95.4%",L==="bm"?"Ketepatan 🎯":"Accuracy 🎯"]].map(([v,l])=>(
+              <div key={l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:"11px"}}><div style={{fontSize:19,fontWeight:800,color:T.text}}>{v}</div><div style={{fontSize:10,color:T.muted}}>{l}</div></div>
+            ))}
+          </div>
+          <div style={{border:"2px dashed #00a88440",borderRadius:11,padding:"16px",textAlign:"center",marginBottom:12,background:"#00a88406"}}>
+            <div style={{fontSize:24,marginBottom:4}}>📂</div>
+            <div style={{fontSize:13,fontWeight:600,color:T.text}}>{L==="bm"?"Lepaskan fail di sini atau klik untuk muat naik":"Drop files here or click to upload"}</div>
+            <div style={{fontSize:11,color:T.muted,marginTop:2}}>PDF · DOCX · TXT · XLSX · Max 10MB</div>
+          </div>
+          {KBFILES.map(f=>(
+            <div key={f.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:"11px 13px",marginBottom:7,display:"flex",alignItems:"center",gap:9}}>
+              <div style={{fontSize:22,flexShrink:0}}>📄</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,fontWeight:600,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.name}</div>
+                <div style={{fontSize:10,color:T.muted}}>{f.size} · {f.chunks||"—"} {L==="bm"?"bahagian":"chunks"} · {f.queries||"—"} {L==="bm"?"pertanyaan":"queries"} · {f.acc}</div>
+                <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3}}>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:f.status==="indexed"?"#00a884":"#f59e0b",flexShrink:0}}/>
+                  <span style={{fontSize:9,color:f.status==="indexed"?"#00a884":"#f59e0b",fontWeight:700}}>{f.status==="indexed"?(L==="bm"?"diindeks":"indexed"):(L==="bm"?"memproses":"processing")}</span>
+                  <span style={{fontSize:9,color:T.muted,marginLeft:3}}>{f.uploaded}</span>
+                </div>
+              </div>
+              <button style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:3,display:"flex"}}><Ico n="trash" s={14}/></button>
+            </div>
+          ))}
+        </>)}
+        {kbTab==="guide"&&(<>
+          <div style={{background:"#00a88410",border:"1px solid #00a88822",borderRadius:11,padding:12,marginBottom:12}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#00a884",marginBottom:4}}>💡 {L==="bm"?"Tip Pro":"Pro Tip"}</div>
+            <div style={{fontSize:11,color:T.text,lineHeight:1.7}}>{L==="bm"?"Muat naik fail berasingan untuk setiap kategori. AI lebih tepat bila ilmu tersusun dan spesifik.":"Upload separate files per category. AI performs better when knowledge is organized and specific."}</div>
+          </div>
+          {[{icon:"🚚",l:{bm:"Polisi Penghantaran",en:"Shipping Policy"},d:{bm:"Masa penghantaran, kurier, penjejakan, COD",en:"Delivery times, courier, tracking, COD"},ex:"shipping_policy.pdf",p:"High"},{icon:"↩️",l:{bm:"Bayaran Balik & Pemulangan",en:"Refund & Return"},d:{bm:"Tempoh pemulangan, kelayakan, proses, barang rosak",en:"Return window, eligibility, process, damaged goods"},ex:"refund_return_policy.pdf",p:"High"},{icon:"❓",l:{bm:"Soalan Lazim",en:"FAQ"},d:{bm:"Soalan biasa: bayaran, akaun, promosi, panduan saiz",en:"Common questions: payment, account, promos, size guide"},ex:"faq_master.pdf",p:"High"},{icon:"📦",l:{bm:"Katalog Produk",en:"Product Catalog"},d:{bm:"Nama produk, SKU, varian, harga, ketersediaan",en:"Product names, SKUs, variants, pricing, availability"},ex:"product_catalog_2025.pdf",p:"High"},{icon:"💰",l:{bm:"Harga & Promosi",en:"Pricing & Promos"},d:{bm:"Senarai harga, tawaran bundle, kod diskaun",en:"Price list, bundle deals, discount codes"},ex:"pricing_promos.pdf",p:"Medium"},{icon:"👤",l:{bm:"Tentang Kami",en:"About Us"},d:{bm:"Latar belakang syarikat, misi, nilai jenama",en:"Company background, mission, brand values"},ex:"about_us.pdf",p:"Medium"}].map((cat,i)=>(
+            <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:13,marginBottom:9}}>
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:5}}>
+                <div style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:20}}>{cat.icon}</span><span style={{fontSize:13,fontWeight:700,color:T.text}}>{cat.l[L]}</span></div>
+                <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:5,color:cat.p==="High"?"#ef4444":"#f59e0b",background:(cat.p==="High"?"#ef4444":"#f59e0b")+"15",flexShrink:0}}>{cat.p}</span>
+              </div>
+              <div style={{fontSize:11,color:T.muted,lineHeight:1.6,marginBottom:7}}>{cat.d[L]}</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:10,color:T.muted,fontFamily:"monospace",background:T.card,padding:"2px 7px",borderRadius:4}}>📎 {cat.ex}</span>
+                <button style={{display:"flex",alignItems:"center",gap:3,padding:"4px 10px",background:"#00a88415",border:"1px solid #00a88822",borderRadius:6,color:"#00a884",fontSize:11,fontWeight:700,cursor:"pointer"}}><Ico n="upload" s={11}/>{C.upload}</button>
+              </div>
+            </div>
+          ))}
+        </>)}
+      </div>
+    </div>
+  );
+
+  /* ── ANALYTICS ── */
+  const Analytics = () => (
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+      <H title={C.analytics} right={<LangToggle/>}/>
+      <div style={{flex:1,overflowY:"auto",padding:13}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}}>
+          {STATS.kpis.map(k=>(
+            <div key={k.l[L]} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:"11px"}}>
+              <div style={{fontSize:17}}>{k.e}</div><div style={{fontSize:20,fontWeight:800,color:T.text,marginTop:2}}>{k.v}</div>
+              <div style={{fontSize:10,color:T.muted}}>{k.l[L]}</div><div style={{fontSize:10,fontWeight:700,color:"#00a884",marginTop:1}}>{k.ch}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:14,marginBottom:11}}>
+          <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:11}}>{C.leadTemp}</div>
+          {[["🔥 Hot",contacts.filter(c=>c.lead==="hot").length,"#ef4444"],["🌤 Warm",contacts.filter(c=>c.lead==="warm").length,"#f97316"],["❄️ Cold",contacts.filter(c=>c.lead==="cold").length,"#8696a0"]].map(([l,v,c])=>(
+            <div key={l} style={{display:"flex",alignItems:"center",gap:9,marginBottom:9}}>
+              <span style={{fontSize:11,fontWeight:600,color:T.text,width:66,flexShrink:0}}>{l}</span>
+              <div style={{flex:1,height:7,borderRadius:4,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:contacts.length?`${(v/contacts.length)*100}%`:"0%",background:c,borderRadius:4}}/></div>
+              <span style={{fontSize:11,fontWeight:700,color:c,width:18,textAlign:"right",flexShrink:0}}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:14,marginBottom:11}}>
+          <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:11}}>{C.weeklyConv}</div>
+          <div style={{display:"flex",gap:4,alignItems:"flex-end",height:72}}>
+            {STATS.weekly.map((v,i)=>{const mx=Math.max(...STATS.weekly);const days=["I","S","R","K","J","S","A"];return(
+              <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                <div style={{width:"100%",borderRadius:"3px 3px 0 0",background:i===6?"#00a884":"#00a88445",height:`${(v/mx)*58}px`,minHeight:3}}/>
+                <span style={{fontSize:8,color:T.muted}}>{days[i]}</span>
+              </div>
+            );})}
+          </div>
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:14,marginBottom:11}}>
+          <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:11}}>{C.channels}</div>
+          {STATS.channels.map(c=>(<div key={c.n} style={{marginBottom:9}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:12,color:T.text}}>{c.n}</span><span style={{fontSize:11,color:T.muted,fontWeight:600}}>{c.p}%</span></div><div style={{height:5,borderRadius:3,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:`${c.p}%`,background:c.c,borderRadius:3}}/></div></div>))}
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:14}}>
+          <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:11}}>{C.topIntents}</div>
+          {STATS.intents.map(i=>(<div key={i.n[L]} style={{display:"flex",alignItems:"center",gap:9,marginBottom:9}}><span style={{fontSize:11,color:T.text,width:100,flexShrink:0}}>{i.n[L]}</span><div style={{flex:1,height:5,borderRadius:3,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:`${i.p}%`,background:"#00a884",borderRadius:3}}/></div><span style={{fontSize:10,color:T.muted,width:26,textAlign:"right",flexShrink:0}}>{i.p}%</span></div>))}
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ── AUTOMATIONS ── */
+  const Automations = () => (
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+      <H title={C.automations} right={<div style={{display:"flex",gap:6}}><LangToggle/><button style={{display:"flex",alignItems:"center",gap:3,padding:"6px 11px",background:"#00a884",border:"none",borderRadius:7,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}><Ico n="plus" s={13}/>{L==="bm"?"Baharu":"New"}</button></div>}/>
+      <div style={{flex:1,overflowY:"auto",padding:13}}>
+        <div style={{fontSize:11,color:T.muted,marginBottom:11}}>{autos.filter(a=>a.on).length}/{autos.length} {L==="bm"?"automasi aktif":"automations active"}</div>
+        {autos.map(a=>(
+          <div key={a.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:13,marginBottom:9}}>
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:7}}>
+              <div style={{flex:1,marginRight:9}}>
+                <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:2}}>{a.name}</div>
+                <div style={{fontSize:10,color:T.muted,marginBottom:1}}><span style={{color:"#f59e0b",fontWeight:700}}>{L==="bm"?"Bila:":"When:"}</span> {a.trigger}</div>
+                <div style={{fontSize:10,color:T.muted}}><span style={{color:"#00a884",fontWeight:700}}>{L==="bm"?"Kemudian:":"Then:"}</span> {a.action}</div>
+              </div>
+              <Tog on={a.on} set={v=>setAutos(p=>p.map(x=>x.id===a.id?{...x,on:v}:x))}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:7,borderTop:`1px solid ${T.divider}`}}>
+              <span style={{fontSize:10,color:T.muted}}>{a.runs.toLocaleString()} {L==="bm"?"larian":"runs"}</span>
+              <div style={{display:"flex",gap:7}}>
+                <button style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:3,display:"flex"}}><Ico n="edit" s={14}/></button>
+                <button style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:3,display:"flex"}}><Ico n="trash" s={14}/></button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  /* ── SETTINGS ── */
+  const Settings = () => {
+    if(settSec){
+      const tmap={workspace:L==="bm"?"Ruang Kerja":"Workspace",channels:C.socialChannels,ai:L==="bm"?"Enjin AI":"AI Engine",notifications:L==="bm"?"Pemberitahuan":"Notifications",team:L==="bm"?"Ahli Pasukan":"Team Members"};
+      return (
+        <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+          <H title={tmap[settSec]||C.settings} back={()=>setSettSec(null)} right={<LangToggle/>}/>
+          <div style={{flex:1,overflowY:"auto",padding:15}}>
+            {settSec==="workspace"&&(
+              <div style={{background:T.surface,borderRadius:11,overflow:"hidden",border:`1px solid ${T.border}`}}>
+                {[[L==="bm"?"Nama Ruang Kerja":"Workspace Name","OmniReply Demo Store"],[L==="bm"?"Plan":"Plan","Free (Trial)","#8696a0"],[L==="bm"?"Zon Masa":"Timezone","Asia/Kuala_Lumpur"],[L==="bm"?"Bahasa":"Language","Bahasa Malaysia / English"],[L==="bm"?"Mata Wang":"Currency","MYR"]].map(([l,v,c],i,arr)=>(
+                  <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 15px",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none"}}>
+                    <span style={{fontSize:13,color:T.text}}>{l}</span><span style={{fontSize:13,color:c||T.muted,fontWeight:c?700:400}}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {settSec==="channels"&&(
+              <>
+                <div style={{fontSize:12,color:T.muted,marginBottom:12,lineHeight:1.6}}>{C.connectMsg}</div>
+                {SOCIAL_CHANNELS.map(ch=>(
+                  <div key={ch.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:13,marginBottom:9,display:"flex",alignItems:"center",gap:11}}>
+                    <div style={{width:44,height:44,borderRadius:11,background:ch.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{ch.icon}</div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                        <span style={{fontSize:14,fontWeight:700,color:T.text}}>{ch.name}</span>
+                        {ch.soon&&<span style={{fontSize:9,fontWeight:700,color:"#8696a0",background:"#8696a015",padding:"2px 6px",borderRadius:4}}>{C.soon}</span>}
+                      </div>
+                      <div style={{fontSize:11,color:T.muted}}>{ch.connected?`${ch.detail} · ${ch.msgs} ${L==="bm"?"msg hari ini":"msgs today"}`:ch.detail}</div>
+                    </div>
+                    {ch.soon
+                      ? <span style={{fontSize:10,fontWeight:700,color:T.muted,background:T.card,padding:"4px 9px",borderRadius:7}}>{C.soon}</span>
+                      : ch.connected
+                        ? <div style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:7,height:7,borderRadius:"50%",background:"#00a884",display:"inline-block"}}/><span style={{fontSize:11,color:"#00a884",fontWeight:700}}>{C.live}</span></div>
+                        : <button onClick={()=>{ if(ch.id==="wa"){setSettSec(null);setShowWA(true);setWaStep("risk");setWaAck(false);} }} style={{padding:"6px 12px",background:ch.color+"18",border:`1px solid ${ch.color}35`,borderRadius:8,color:ch.color,fontSize:12,fontWeight:700,cursor:"pointer"}}>{C.connect}</button>
+                    }
+                  </div>
+                ))}
+              </>
+            )}
+            {settSec==="ai"&&(
+              <>
+                <div style={{background:T.surface,borderRadius:11,overflow:"hidden",border:`1px solid ${T.border}`,marginBottom:12}}>
+                  {[["Model","GPT-4o"],[L==="bm"?"Suhu":"Temperature","0.3 — Tepat"],[L==="bm"?"Token Maks":"Max Tokens","500"],[L==="bm"?"Ambang Keyakinan":"Confidence Threshold",`${aiCfg.thresh}%`]].map(([l,v],i,arr)=>(
+                    <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 15px",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none"}}>
+                      <span style={{fontSize:13,color:T.text}}>{l}</span><span style={{fontSize:13,color:T.muted}}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{background:T.surface,borderRadius:11,overflow:"hidden",border:`1px solid ${T.border}`}}>
+                  {[[L==="bm"?"Balas Auto (AI hantar terus)":"Auto Reply (AI sends directly)","auto"],[L==="bm"?"Mod Draf (AI cadang sahaja)":"Draft Mode (AI suggests only)","draft"]].map(([l,k],i,arr)=>(
+                    <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 15px",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none"}}>
+                      <span style={{fontSize:13,color:T.text}}>{l}</span>
+                      <Tog on={aiCfg[k]} set={v=>setAiCfg(p=>({...p,[k]:v}))}/>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {settSec==="notifications"&&(
+              <div style={{background:T.surface,borderRadius:11,overflow:"hidden",border:`1px solid ${T.border}`}}>
+                {[[L==="bm"?"Mesej baharu diterima":"New message received","newMsg"],[L==="bm"?"Eskalasi manusia diperlukan":"Human escalation required","esc"],[L==="bm"?"Keyakinan AI rendah":"AI confidence below threshold","lowConf"],[L==="bm"?"Ringkasan harian":"Daily summary email","daily"],[L==="bm"?"Laporan mingguan":"Weekly performance report","weekly"]].map(([l,k],i,arr)=>(
+                  <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 15px",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none"}}>
+                    <span style={{fontSize:13,color:T.text}}>{l}</span>
+                    <Tog on={notifs[k]} set={v=>setNotifs(p=>({...p,[k]:v}))}/>
+                  </div>
+                ))}
+              </div>
+            )}
+            {settSec==="team"&&(
+              <>
+                <div style={{background:"#f59e0b10",border:"1px solid #f59e0b28",borderRadius:11,padding:13,marginBottom:12,display:"flex",gap:9}}>
+                  <Ico n="info" s={17}/>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:"#f59e0b",marginBottom:2}}>{C.teamRequired}</div>
+                    <div style={{fontSize:11,color:T.muted,lineHeight:1.5}}>{C.teamRequiredDesc}</div>
+                    <button onClick={()=>{setSettSec(null);setShowP(true);}} style={{marginTop:7,padding:"6px 13px",background:"#f59e0b",border:"none",borderRadius:7,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer"}}>{C.viewPricing}</button>
+                  </div>
+                </div>
+                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:13,display:"flex",alignItems:"center",gap:11}}>
+                  <div style={{width:40,height:40,borderRadius:"50%",background:"#0ea5e922",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#0ea5e9"}}>AU</div>
+                  <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:T.text}}>Admin User</div><div style={{fontSize:10,color:T.muted,background:T.card,display:"inline-block",padding:"1px 6px",borderRadius:4,marginTop:2}}>Admin</div></div>
+                </div>
+                <button onClick={()=>setShowP(true)} style={{width:"100%",padding:11,marginTop:9,background:T.card,border:`1px solid ${T.border}`,borderRadius:11,color:T.muted,fontSize:13,fontWeight:600,cursor:"pointer",opacity:.55}}>
+                  {C.inviteMember}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={C.settings} right={<LangToggle/>}/>
+        <div style={{flex:1,overflowY:"auto"}}>
+          <div style={{background:T.surface,padding:"16px 15px",borderBottom:`1px solid ${T.border}`,display:"flex",gap:12,alignItems:"center",marginBottom:7}}>
+            <div style={{width:50,height:50,borderRadius:"50%",background:"#00a88420",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:700,color:"#00a884"}}>AU</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:T.text}}>Admin User</div>
+              <div style={{fontSize:11,color:T.muted}}>admin@omnireply.com</div>
+              <div style={{fontSize:10,fontWeight:700,color:"#8696a0",marginTop:1}}>● {L==="bm"?"Plan Percuma (Percubaan)":"Free Plan (Trial)"}</div>
+            </div>
+          </div>
+          <div onClick={()=>setShowP(true)} style={{margin:"0 13px 7px",background:"linear-gradient(135deg,#00a88418,#6366f118)",border:"1px solid #00a88822",borderRadius:13,padding:"12px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:11}}>
+            <div style={{width:38,height:38,borderRadius:10,background:"#00a884",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>👑</div>
+            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:T.text}}>{C.upgrade}</div><div style={{fontSize:11,color:"#00a884",fontWeight:600}}>Free · Starter RM129 · Growth RM649/bln ({L==="bm"?"tahunan":"annual"})</div></div>
+            <span style={{color:"#00a884",fontWeight:700,fontSize:12}}>{L==="bm"?"Lihat →":"View →"}</span>
+          </div>
+          <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,marginBottom:7}}>
+            {[[C.demoMode,C.showSampleData,demo,setDemo],[C.darkTheme,C.waTheme,dark,setDark]].map(([l,sub,on,fn])=>(
+              <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 15px",borderBottom:`1px solid ${T.divider}`}}>
+                <div><div style={{fontSize:13,fontWeight:600,color:T.text}}>{l}</div><div style={{fontSize:11,color:T.muted}}>{sub}</div></div>
+                <Tog on={on} set={fn}/>
+              </div>
+            ))}
+          </div>
+          <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,marginBottom:7}}>
+            {[{k:"workspace",l:L==="bm"?"Ruang Kerja":"Workspace",e:"🏢",sub:"OmniReply Demo Store"},{k:"channels",l:C.socialChannels,e:"🔗",sub:"WhatsApp + Web"},{k:"ai",l:L==="bm"?"Enjin AI":"AI Engine",e:"🤖",sub:"GPT-4o · Auto Reply ON"},{k:"notifications",l:L==="bm"?"Pemberitahuan":"Notifications",e:"🔔",sub:"5/5"},{k:"team",l:L==="bm"?"Ahli Pasukan":"Team Members",e:"👥",sub:L==="bm"?"Naik Taraf ke Growth":"Upgrade to Growth"}].map((item,i,arr)=>(
+              <button key={item.k} onClick={()=>setSettSec(item.k)} style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:"12px 15px",background:"none",border:"none",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none",cursor:"pointer",textAlign:"left"}}>
+                <div style={{width:38,height:38,borderRadius:"50%",background:"#00a88415",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>{item.e}</div>
+                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:T.text}}>{item.l}</div><div style={{fontSize:11,color:item.k==="team"?"#f59e0b":T.muted}}>{item.sub}</div></div>
+                <span style={{color:T.muted,fontSize:18}}>›</span>
+              </button>
+            ))}
+          </div>
+          <div style={{padding:14,display:"flex",gap:7}}>
+            <button onClick={()=>setShowOB(true)} style={{flex:1,padding:11,background:"#00a88415",border:"1px solid #00a88822",borderRadius:11,color:"#00a884",fontSize:12,fontWeight:700,cursor:"pointer"}}>🚀 {C.setupGuide}</button>
+            <button onClick={()=>setShowP(true)} style={{flex:1,padding:11,background:"#6366f115",border:"1px solid #6366f122",borderRadius:11,color:"#6366f1",fontSize:12,fontWeight:700,cursor:"pointer"}}>👑 {C.upgrade}</button>
+          </div>
+          <div style={{padding:"2px 14px 14px",fontSize:10,color:T.muted,textAlign:"center"}}>OmniReply AI v2.4.1 · {L==="bm"?"Plan Percuma":"Free Plan"}</div>
+        </div>
+      </div>
+    );
+  };
+
+  /* ── ONBOARDING ── */
+  const OB_STEPS = [
+    {icon:"📱",title:{bm:"Sambungkan WhatsApp",en:"Connect WhatsApp"},desc:{bm:"Imbas kod QR untuk pautkan nombor WhatsApp Business anda",en:"Scan QR code to link your WhatsApp Business number"},done:true,t:"settings"},
+    {icon:"📄",title:{bm:"Muat Naik Pangkalan Ilmu",en:"Upload Knowledge Base"},desc:{bm:"Tambah FAQ, katalog produk & polisi supaya AI boleh jawab pelanggan",en:"Add FAQ, product catalog & policies so AI can answer customers"},done:false,t:"kb"},
+    {icon:"🤖",title:{bm:"Konfigurasi AI",en:"Configure AI"},desc:{bm:"Tetapkan ambang keyakinan dan pilihan auto-balas",en:"Set confidence threshold and auto-reply preferences"},done:true,t:"settings"},
+    {icon:"⚡",title:{bm:"Sediakan Automasi",en:"Setup Automations"},desc:{bm:"Buat mesej selamat datang dan auto-balas di luar waktu",en:"Create welcome message and after-hours auto-reply"},done:false,t:"automation"},
+    {icon:"📣",title:{bm:"Pelajari Rangka Kerja Pemasaran",en:"Learn Marketing Frameworks"},desc:{bm:"Guna 6 formula terbukti untuk menulis kopi WhatsApp yang convert",en:"Use 6 proven formulas to write WhatsApp copy that converts"},done:false,t:"marketing"},
+    {icon:"📊",title:{bm:"Semak Analitik",en:"Review Analytics"},desc:{bm:"Periksa insights pertama dan laraskan tetapan AI",en:"Check first insights and adjust AI settings"},done:false,t:"analytics"},
+  ];
+  const Onboarding = () => {
+    const done=OB_STEPS.filter(s=>s.done).length; const pct=Math.round((done/OB_STEPS.length)*100);
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:1000,background:"#000000aa",display:"flex",alignItems:"flex-end"}}>
+        <div style={{width:"100%",maxWidth:430,margin:"0 auto",background:T.surface,borderRadius:"20px 20px 0 0",maxHeight:"88vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+          <div style={{padding:"18px 16px 12px",borderBottom:`1px solid ${T.border}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div><div style={{fontSize:17,fontWeight:800,color:T.text,marginBottom:2}}>{C.obTitle}</div><div style={{fontSize:12,color:T.muted}}>{C.obSubtitle}</div></div>
+              <button onClick={()=>setShowOB(false)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:4,display:"flex"}}><Ico n="x" s={18}/></button>
+            </div>
+            <div style={{marginTop:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontSize:11,color:T.muted}}>{done}/{OB_STEPS.length} {C.obDone}</span><span style={{fontSize:11,fontWeight:700,color:"#00a884"}}>{pct}%</span></div>
+              <div style={{height:5,borderRadius:3,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:"#00a884",borderRadius:3}}/></div>
+            </div>
+          </div>
+          <div style={{flex:1,overflowY:"auto",padding:"8px 14px 18px"}}>
+            {OB_STEPS.map((step,i)=>(
+              <div key={i} onClick={()=>{setShowOB(false); if(step.title&&step.title.en==="Connect WhatsApp"){setShowWA(true);setWaStep("risk");setWaAck(false);} else {setTab(step.t||"settings");} }} style={{display:"flex",alignItems:"flex-start",gap:11,padding:"12px 0",borderBottom:i<OB_STEPS.length-1?`1px solid ${T.divider}`:"none",cursor:"pointer"}}>
+                <div style={{width:38,height:38,borderRadius:"50%",background:step.done?"#00a88420":T.card,border:`2px solid ${step.done?"#00a884":T.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>
+                  {step.done?<span style={{color:"#00a884",display:"flex"}}><Ico n="check" s={16}/></span>:step.icon}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:1}}>
+                    <span style={{fontSize:13,fontWeight:600,color:step.done?T.muted:T.text,textDecoration:step.done?"line-through":"none"}}>{step.title[L]}</span>
+                    {step.done&&<span style={{fontSize:9,fontWeight:700,color:"#00a884",background:"#00a88415",padding:"1px 5px",borderRadius:4}}>✓</span>}
+                  </div>
+                  <div style={{fontSize:11,color:T.muted,lineHeight:1.5}}>{step.desc[L]}</div>
+                </div>
+                {!step.done&&<span style={{color:T.muted,fontSize:16,flexShrink:0,marginTop:9}}>›</span>}
+              </div>
+            ))}
+          </div>
+          <div style={{padding:"10px 14px",borderTop:`1px solid ${T.border}`,display:"flex",gap:7}}>
+            <button onClick={()=>{setShowOB(false);setShowP(true);}} style={{flex:1,padding:11,background:"transparent",border:`1px solid ${T.border}`,borderRadius:11,color:T.text,fontSize:12,fontWeight:600,cursor:"pointer"}}>{C.obUpgrade}</button>
+            <button onClick={()=>setShowOB(false)} style={{flex:2,padding:11,background:"#00a884",border:"none",borderRadius:11,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{C.obContinue}</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
+  /* ════ v7: BROADCAST ════ */
+  const Broadcast = () => {
+    const auds=[
+      {k:"all",l:{bm:"Semua Kenalan",en:"All Contacts"},n:contacts.length,ic:"👥"},
+      {k:"hot",l:{bm:"Hot Leads",en:"Hot Leads"},n:contacts.filter(c=>c.lead==="hot").length,ic:"🔥"},
+      {k:"warm",l:{bm:"Warm Leads",en:"Warm Leads"},n:contacts.filter(c=>c.lead==="warm").length,ic:"🌤"},
+      {k:"cold",l:{bm:"Cold Leads",en:"Cold Leads"},n:contacts.filter(c=>c.lead==="cold").length,ic:"❄️"},
+      {k:"vip",l:{bm:"VIP sahaja",en:"VIP only"},n:contacts.filter(c=>c.tag==="VIP").length,ic:"👑"},
+    ];
+    const stCol=s=>s==="sent"?"#00a884":s==="scheduled"?"#f59e0b":"#8696a0";
+    const stLbl=s=>s==="sent"?"✓ "+(L==="bm"?"Dihantar":"Sent"):s==="scheduled"?"⏰ "+(L==="bm"?"Dijadual":"Scheduled"):"📝 Draft";
+    if(bcDetail){
+      const b=bcDetail;
+      return(
+        <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+          <H title={b.name} back={()=>setBcDetail(null)} right={<LangToggle/>}/>
+          <div style={{flex:1,overflowY:"auto",padding:14}}>
+            <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,padding:14,marginBottom:12}}>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10}}>
+                <span style={{fontSize:11,fontWeight:700,color:stCol(b.status),background:stCol(b.status)+"18",padding:"3px 9px",borderRadius:6}}>{stLbl(b.status)}</span>
+                <span style={{fontSize:11,color:T.muted}}>👥 {b.audience[L]}</span>
+                <span style={{fontSize:11,color:T.muted}}>📅 {b.at}</span>
+              </div>
+              <div style={{background:dark?"#1f2c34":"#d9fdd3",borderRadius:"8px 8px 0 8px",padding:"10px 12px",fontSize:13,color:T.text,lineHeight:1.7,whiteSpace:"pre-line"}}>{b.msg}</div>
+            </div>
+            {b.status==="sent"&&(
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
+                {[["📤",b.sent,C.sent,"#6366f1"],["✅",b.delivered,C.delivered,"#00a884"],["👁️",b.read,C.read,"#f59e0b"],["💬",b.replied,C.replied,"#ec4899"]].map(([e,v,l,cl])=>(
+                  <div key={l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:12,textAlign:"center"}}>
+                    <div style={{fontSize:20,marginBottom:4}}>{e}</div><div style={{fontSize:22,fontWeight:800,color:cl}}>{v.toLocaleString()}</div>
+                    <div style={{fontSize:10,color:T.muted}}>{l}</div>
+                    {b.sent>0&&<div style={{fontSize:10,color:T.muted,marginTop:2}}>{Math.round(v/b.sent*100)}%</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    if(bcView==="compose"){
+      return(
+        <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+          <H title={C.compose} back={()=>{setBcView("list");setBcStep(1);}} right={<LangToggle/>}/>
+          <div style={{display:"flex",padding:"10px 14px",gap:4,background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+            {[{n:1,l:C.message},{n:2,l:C.audience},{n:3,l:C.schedule}].map(({n,l})=>(
+              <div key={n} onClick={()=>setBcStep(n)} style={{flex:1,display:"flex",alignItems:"center",gap:4,cursor:"pointer"}}>
+                <div style={{width:22,height:22,borderRadius:"50%",background:bcStep>=n?"#00a884":T.card,border:`2px solid ${bcStep>=n?"#00a884":T.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:bcStep>=n?"#fff":T.muted,flexShrink:0}}>{bcStep>n?"✓":n}</div>
+                <span style={{fontSize:10,color:bcStep>=n?"#00a884":T.muted,fontWeight:bcStep>=n?700:400}}>{l}</span>
+                {n<3&&<div style={{flex:1,height:1,background:bcStep>n?"#00a884":T.border}}/>}
+              </div>
+            ))}
+          </div>
+          <div style={{flex:1,overflowY:"auto",padding:14}}>
+            {bcStep===1&&(<>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:6}}>{C.broadcastName}</div>
+              <input value={bcName} onChange={e=>setBcName(e.target.value)} placeholder={L==="bm"?"Cth: Promosi Raya 2025":"E.g. Raya Promo 2025"} style={{width:"100%",background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 12px",fontSize:13,color:T.text,outline:"none",marginBottom:12,boxSizing:"border-box",fontFamily:"inherit"}}/>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:6}}>{C.message}</div>
+              <textarea value={bcMsg} onChange={e=>setBcMsg(e.target.value)} placeholder={L==="bm"?"Taip mesej broadcast…":"Type your broadcast message…"} rows={5} style={{width:"100%",background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:"10px 12px",fontSize:13,color:T.text,resize:"none",outline:"none",fontFamily:"inherit",lineHeight:1.6,boxSizing:"border-box",marginBottom:10}}/>
+              <div style={{fontSize:11,color:T.muted,marginBottom:12}}>💡 {L==="bm"?"Guna {nama} untuk personalisasi":"Use {name} to personalize"}</div>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:8}}>{C.quickTemplates}</div>
+              {TEMPLATES.slice(0,3).map(t=>(
+                <div key={t.id} onClick={()=>setBcMsg(t.msg[L])} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:10,marginBottom:7,cursor:"pointer"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:T.text}}>{t.name[L]}</span><span style={{fontSize:9,color:T.muted,background:T.card,padding:"1px 6px",borderRadius:4}}>{t.cat[L]}</span></div>
+                  <div style={{fontSize:11,color:T.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.msg[L]}</div>
+                </div>
+              ))}
+              <button onClick={()=>setBcStep(2)} style={{width:"100%",padding:12,background:"#00a884",border:"none",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",marginTop:8,fontFamily:"inherit"}}>{C.next} →</button>
+            </>)}
+            {bcStep===2&&(<>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:10}}>{C.selectAudience}</div>
+              {auds.map(o=>(
+                <div key={o.k} onClick={()=>setBcAud(o.k)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",background:T.surface,border:`2px solid ${bcAud===o.k?"#00a884":T.border}`,borderRadius:11,marginBottom:8,cursor:"pointer"}}>
+                  <span style={{fontSize:20}}>{o.ic}</span>
+                  <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:T.text}}>{o.l[L]}</div><div style={{fontSize:11,color:T.muted}}>{o.n} {L==="bm"?"kenalan":"contacts"}</div></div>
+                  {bcAud===o.k&&<span style={{color:"#00a884",display:"flex"}}><Ico n="check" s={18}/></span>}
+                </div>
+              ))}
+              <div style={{display:"flex",gap:8,marginTop:8}}>
+                <button onClick={()=>setBcStep(1)} style={{flex:1,padding:12,background:T.card,border:`1px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>← {C.back2}</button>
+                <button onClick={()=>setBcStep(3)} style={{flex:2,padding:12,background:"#00a884",border:"none",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{C.next} →</button>
+              </div>
+            </>)}
+            {bcStep===3&&(<>
+              <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:10}}>{L==="bm"?"Masa Penghantaran":"Send Time"}</div>
+              {[{k:"now",l:C.sendNow,d:L==="bm"?"Hantar segera":"Send immediately",ic:"🚀"},{k:"schedule",l:C.scheduleSend,d:L==="bm"?"Pilih tarikh & masa":"Choose date & time",ic:"📅"}].map(o=>(
+                <div key={o.k} onClick={()=>setBcSched(o.k)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",background:T.surface,border:`2px solid ${bcSched===o.k?"#00a884":T.border}`,borderRadius:11,marginBottom:8,cursor:"pointer"}}>
+                  <span style={{fontSize:20}}>{o.ic}</span>
+                  <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:T.text}}>{o.l}</div><div style={{fontSize:11,color:T.muted}}>{o.d}</div></div>
+                  {bcSched===o.k&&<span style={{color:"#00a884",display:"flex"}}><Ico n="check" s={18}/></span>}
+                </div>
+              ))}
+              {bcSched==="schedule"&&<input type="datetime-local" style={{width:"100%",background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 10px",fontSize:13,color:T.text,outline:"none",boxSizing:"border-box",marginBottom:10}}/>}
+              <div style={{background:"#00a88410",border:"1px solid #00a88822",borderRadius:11,padding:12,marginBottom:12}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#00a884",marginBottom:8}}>{C.summary2}</div>
+                <div style={{fontSize:11,color:T.text,marginBottom:3}}>📝 {bcName||"—"}</div>
+                <div style={{fontSize:11,color:T.text,marginBottom:3}}>👥 {auds.find(a=>a.k===bcAud)?.l[L]}</div>
+                <div style={{fontSize:11,color:T.text}}>⏰ {bcSched==="now"?(L==="bm"?"Sekarang":"Now"):(L==="bm"?"Dijadualkan":"Scheduled")}</div>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setBcStep(2)} style={{flex:1,padding:12,background:T.card,border:`1px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>← {C.back2}</button>
+                <button onClick={()=>{setBcView("list");setBcStep(1);setBcName("");setBcMsg("");}} style={{flex:2,padding:12,background:"#00a884",border:"none",borderRadius:10,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{bcSched==="now"?"🚀 "+C.sendNow:"📅 "+C.scheduleSend}</button>
+              </div>
+            </>)}
+          </div>
+        </div>
+      );
+    }
+    return(
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={C.broadcast} right={<LangToggle/>}/>
+        <div style={{padding:"10px 14px",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+          <button onClick={()=>setBcView("compose")} style={{width:"100%",padding:10,background:"#00a884",border:"none",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"inherit"}}><Ico n="broadcast" s={16}/>+ {C.newBroadcast}</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:14}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+            {[["📣",BROADCASTS.filter(b=>b.status==="sent").length,C.sent],["⏰",BROADCASTS.filter(b=>b.status==="scheduled").length,L==="bm"?"Dijadual":"Scheduled"],["📝",BROADCASTS.filter(b=>b.status==="draft").length,"Draft"]].map(([e,v,l])=>(
+              <div key={l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:10,textAlign:"center"}}>
+                <div style={{fontSize:18}}>{e}</div><div style={{fontSize:20,fontWeight:800,color:T.text}}>{v}</div><div style={{fontSize:9,color:T.muted}}>{l}</div>
+              </div>
+            ))}
+          </div>
+          {BROADCASTS.map(b=>(
+            <div key={b.id} onClick={()=>setBcDetail(b)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:13,padding:13,marginBottom:9,cursor:"pointer"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:7}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:700,color:T.text,marginBottom:3}}>{b.name}</div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,fontWeight:700,color:stCol(b.status),background:stCol(b.status)+"18",padding:"2px 7px",borderRadius:5}}>{stLbl(b.status)}</span>
+                    <span style={{fontSize:10,color:T.muted,background:T.card,padding:"2px 6px",borderRadius:5}}>{b.audience[L]}</span>
+                  </div>
+                </div>
+                <span style={{fontSize:10,color:T.muted,flexShrink:0}}>{b.at}</span>
+              </div>
+              <div style={{fontSize:11,color:T.muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:8}}>{b.msg}</div>
+              {b.status==="sent"&&(
+                <div style={{display:"flex",gap:10}}>
+                  {[["📤",b.sent],["✅",b.delivered],["👁️",b.read],["💬",b.replied]].map(([e,v],i)=>(
+                    <div key={i} style={{flex:1,textAlign:"center"}}><div style={{fontSize:10}}>{e}</div><div style={{fontSize:12,fontWeight:700,color:T.text}}>{v.toLocaleString()}</div></div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ════ v7: CONTACTS ════ */
+  const Contacts = () => {
+    const fil=contacts.filter(c=>c.name.toLowerCase().includes(cSearch.toLowerCase())&&(cFilter==="all"||c.lead===cFilter));
+    return(
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={C.contacts} right={<LangToggle/>}/>
+        <div style={{padding:"10px 12px",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,background:T.input,borderRadius:8,padding:"6px 10px",marginBottom:8}}>
+            <span style={{color:T.muted,display:"flex"}}><Ico n="search" s={14}/></span>
+            <input value={cSearch} onChange={e=>setCSearch(e.target.value)} placeholder={C.searchContacts} style={{background:"none",border:"none",outline:"none",fontSize:13,color:T.text,flex:1,fontFamily:"inherit"}}/>
+            {cSearch&&<button onClick={()=>setCSearch("")} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:0,display:"flex"}}><Ico n="x" s={14}/></button>}
+          </div>
+          <div style={{display:"flex",gap:4,alignItems:"center"}}>
+            <div style={{display:"flex",gap:4,flex:1,overflowX:"auto"}}>
+              {[["all",C.all],["hot","🔥 Hot"],["warm","🌤 Warm"],["cold","❄️ Cold"]].map(([k,l])=>(
+                <button key={k} onClick={()=>setCFilter(k)} style={{padding:"3px 10px",borderRadius:18,border:`1px solid ${cFilter===k?"#00a884":T.border}`,background:cFilter===k?"#00a88418":"transparent",color:cFilter===k?"#00a884":T.muted,fontSize:11,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap",flexShrink:0,fontFamily:"inherit"}}>{l}</button>
+              ))}
+            </div>
+            <button style={{padding:"4px 10px",borderRadius:8,border:`1px solid ${T.border}`,background:T.card,color:T.muted,fontSize:11,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:3,flexShrink:0,fontFamily:"inherit"}}><Ico n="upload" s={11}/>{C.export}</button>
+          </div>
+        </div>
+        <div style={{padding:"8px 12px",background:T.surface,borderBottom:`1px solid ${T.border}`,flexShrink:0,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:11,color:T.muted}}>{fil.length} {C.contacts.toLowerCase()}</span>
+          <button style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",background:"#00a884",border:"none",borderRadius:8,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}><Ico n="plus" s={12}/>{C.addContact}</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto"}}>
+          {fil.map(c=>(
+            <div key={c.id} onClick={()=>setCProfile(c)} style={{display:"flex",gap:11,padding:"11px 13px",borderBottom:`1px solid ${T.divider}`,cursor:"pointer",alignItems:"center"}}>
+              <div style={{position:"relative",flexShrink:0}}>
+                <div style={{width:46,height:46,borderRadius:"50%",background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:c.color}}>{c.avatar}</div>
+                <div style={{position:"absolute",bottom:1,right:1,width:10,height:10,borderRadius:"50%",background:c.status==="online"?"#25d366":c.status==="away"?"#f59e0b":"#8696a0",border:`2px solid ${T.surface}`}}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                  <span style={{fontSize:14,fontWeight:600,color:T.text}}>{c.name}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:"#00a884"}}>{c.spent}</span>
+                </div>
+                <div style={{display:"flex",gap:5,marginBottom:3,flexWrap:"wrap"}}><TBadge t={c.tag}/><LBadge l={c.lead}/></div>
+                <div style={{fontSize:11,color:T.muted}}>{c.orders} {L==="bm"?"pesanan":"orders"} · {c.intent[L]}</div>
+              </div>
+              <span style={{color:T.muted,fontSize:18,flexShrink:0}}>›</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ════ v7: CONTACT PROFILE ════ */
+  const ContactProfile = ({c}) => (
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+      <H title={c.name} back={()=>setCProfile(null)} right={<LangToggle/>}/>
+      <div style={{flex:1,overflowY:"auto",padding:14}}>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:16,marginBottom:12,textAlign:"center"}}>
+          <div style={{width:70,height:70,borderRadius:"50%",background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700,color:c.color,margin:"0 auto 10px"}}>{c.avatar}</div>
+          <div style={{fontSize:18,fontWeight:800,color:T.text,marginBottom:6}}>{c.name}</div>
+          <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap",marginBottom:12}}><TBadge t={c.tag}/><LBadge l={c.lead}/></div>
+          <div style={{display:"flex",justifyContent:"center",gap:8}}>
+            <button onClick={()=>{setCProfile(null);setChat(c);setTab("chats");}} style={{display:"flex",alignItems:"center",gap:5,padding:"8px 16px",background:"#00a884",border:"none",borderRadius:9,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}><Ico n="chat" s={14}/>{C.chatBtn}</button>
+            <button style={{display:"flex",alignItems:"center",gap:5,padding:"8px 16px",background:T.card,border:`1px solid ${T.border}`,borderRadius:9,color:T.text,fontSize:12,fontWeight:600,cursor:"pointer"}}><Ico n="phone" s={14}/>{C.callBtn}</button>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
+          {[["📦",c.orders,L==="bm"?"Pesanan":"Orders"],["💰",c.spent,C.totalSpent],["🎯",c.confidence+"%",L==="bm"?"Keyakinan":"Confidence"]].map(([e,v,l],i)=>(
+            <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:10,textAlign:"center"}}>
+              <div style={{fontSize:16,marginBottom:3}}>{e}</div><div style={{fontSize:13,fontWeight:800,color:T.text}}>{v}</div><div style={{fontSize:9,color:T.muted}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:800,color:T.muted,marginBottom:8}}>🤖 AI {L==="bm"?"INSIGHT":"INSIGHTS"}</div>
+          <div style={{fontSize:11,color:T.muted,marginBottom:3}}>{L==="bm"?"Niat":"Intent"}: <span style={{color:T.text,fontWeight:600}}>{c.intent[L]}</span></div>
+          <div style={{fontSize:11,color:T.muted}}>{L==="bm"?"Sentimen":"Sentiment"}: <span style={{color:c.sentiment==="positive"?"#00a884":c.sentiment==="negative"?"#ef4444":"#f59e0b",fontWeight:600}}>{c.sentiment}</span></div>
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:800,color:T.muted,marginBottom:8}}>📝 {C.agentRemarks}</div>
+          <div style={{fontSize:12,color:T.text,lineHeight:1.6,background:T.card,borderRadius:8,padding:"8px 10px"}}>{c.remark}</div>
+          <div style={{fontSize:10,color:T.muted,marginTop:4}}>{c.remarkAdded[L]}</div>
+        </div>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:T.muted,marginBottom:10}}>{C.recentMsgs}</div>
+          {c.msgs.slice(-3).map(m=>(
+            <div key={m.id} style={{display:"flex",marginBottom:8,flexDirection:m.from==="in"?"row":"row-reverse"}}>
+              <div style={{maxWidth:"80%",background:m.from==="in"?T.card:T.msgOut,padding:"6px 10px",borderRadius:8,fontSize:11,color:T.text,lineHeight:1.5}}>{m.text}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ════ v7: CSAT ════ */
+  const CSAT = () => {
+    const avg=(CSAT_REVIEWS.reduce((s,r)=>s+r.rating,0)/CSAT_REVIEWS.length).toFixed(1);
+    return(
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={C.csat} back={()=>{setTab("chats");setShowDrawer(false);}} right={<LangToggle/>}/>
+        <div style={{flex:1,overflowY:"auto",padding:13}}>
+          <div style={{background:"linear-gradient(135deg,#00a88415,#f59e0b10)",border:`1px solid ${T.border}`,borderRadius:14,padding:16,marginBottom:12,textAlign:"center"}}>
+            <div style={{fontSize:46,fontWeight:900,color:"#f59e0b",lineHeight:1}}>{avg}</div>
+            <div style={{marginTop:4}}>{[1,2,3,4,5].map(i=><span key={i} style={{color:i<=Math.round(avg)?"#f59e0b":T.border,fontSize:20}}>★</span>)}</div>
+            <div style={{fontSize:11,color:T.muted,marginTop:6}}>{C.basedOn} 312 {C.reviews.toLowerCase()}</div>
+            <div style={{display:"flex",justifyContent:"center",gap:20,marginTop:12}}>
+              <div><div style={{fontSize:18,fontWeight:800,color:T.text}}>87%</div><div style={{fontSize:10,color:T.muted}}>{C.responseRate}</div></div>
+              <div><div style={{fontSize:18,fontWeight:800,color:T.text}}>312</div><div style={{fontSize:10,color:T.muted}}>{C.reviews}</div></div>
+            </div>
+          </div>
+          <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:12}}>
+            <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:10}}>{C.ratings}</div>
+            {CSAT_BREAKDOWN.map(({s,c,p})=>(
+              <div key={s} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:2,width:30,flexShrink:0}}><span style={{fontSize:11,color:T.muted}}>{s}</span><span style={{color:"#f59e0b",fontSize:11}}>★</span></div>
+                <div style={{flex:1,height:6,borderRadius:3,background:T.border,overflow:"hidden"}}><div style={{height:"100%",width:p+"%",background:"#f59e0b",borderRadius:3}}/></div>
+                <span style={{fontSize:10,color:T.muted,width:54,textAlign:"right",flexShrink:0}}>{c} ({p}%)</span>
+              </div>
+            ))}
+          </div>
+          <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:10}}>{C.recentReviews}</div>
+          {CSAT_REVIEWS.map(r=>(
+            <div key={r.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:13,marginBottom:9}}>
+              <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:7}}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:r.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:r.color,flexShrink:0}}>{r.avatar}</div>
+                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:T.text}}>{r.name}</div><div>{[1,2,3,4,5].map(i=><span key={i} style={{color:i<=r.rating?"#f59e0b":T.border,fontSize:12}}>★</span>)}</div></div>
+                <span style={{fontSize:10,color:T.muted}}>{r.time}</span>
+              </div>
+              <div style={{fontSize:12,color:T.muted,lineHeight:1.5,fontStyle:"italic"}}>"{r.comment[L]}"</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ════ v7: ASSETS ════ */
+  const Assets = () => {
+    const tabs=[{k:"docs",l:C.docs},{k:"catalog",l:C.catalog},{k:"media",l:C.media},{k:"templates",l:C.templates}];
+    const GUIDE={
+      docs:[{i:"📄",t:{bm:"Muat Naik Dokumen",en:"Upload Documents"},d:{bm:"Upload FAQ, polisi & katalog PDF. AI guna untuk jawab pelanggan automatik.",en:"Upload FAQ, policies & catalog PDFs. AI uses them to answer customers automatically."}},{i:"⚡",t:{bm:"Indeks Auto",en:"Auto-Index"},d:{bm:"Sistem auto-index fail dalam 2-5 minit selepas upload.",en:"System auto-indexes your file within 2-5 minutes."}},{i:"📊",t:{bm:"Pantau Guna",en:"Monitor Usage"},d:{bm:"Lihat berapa kali AI guna setiap dokumen.",en:"See how often AI uses each document."}}],
+      catalog:[{i:"🛒",t:{bm:"Tambah Produk",en:"Add Products"},d:{bm:"Tambah nama, harga & stok. AI rujuk katalog bila pelanggan tanya.",en:"Add name, price & stock. AI references this when customers ask."}},{i:"👆",t:{bm:"Tap Detail",en:"Tap for Details"},d:{bm:"Tap kad produk untuk lihat detail atau edit.",en:"Tap any product card to view details or edit."}},{i:"🚫",t:{bm:"Status Habis",en:"Sold Out"},d:{bm:"Stok 0 = auto-tunjuk label HABIS.",en:"Stock 0 auto-shows SOLD OUT label."}}],
+      media:[{i:"🖼️",t:{bm:"Format Disokong",en:"Supported"},d:{bm:"JPG, PNG, MP4, PDF sehingga 50MB.",en:"JPG, PNG, MP4, PDF up to 50MB."}},{i:"📋",t:{bm:"Salin Nama",en:"Copy Name"},d:{bm:"Copy nama fail untuk share ke pelanggan.",en:"Copy file name to share with customers."}},{i:"🗑️",t:{bm:"Padam Lama",en:"Delete Old"},d:{bm:"Padam fail tak perlu untuk jimat storan.",en:"Delete unused files to save space."}}],
+      templates:[{i:"📋",t:{bm:"Guna Templat",en:"Use Template"},d:{bm:"Tekan Guna untuk masukkan ke broadcast.",en:"Press Use to insert into a broadcast."}},{i:"🔤",t:{bm:"Placeholder",en:"Placeholders"},d:{bm:"Guna {nama}, {produk} untuk auto-isi info pelanggan.",en:"Use {name}, {product} to auto-fill customer info."}},{i:"✏️",t:{bm:"Edit Templat",en:"Edit Template"},d:{bm:"Tekan pensil untuk ubah teks atau emoji.",en:"Press pencil to edit text or emoji."}}],
+    };
+    const bi=(GUIDE[assTab]||[]).map(x=>({icon:x.i,title:x.t[L],desc:x.d[L]}));
+    return(
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg,position:"relative"}}>
+        <H title={C.assets} right={<div style={{display:"flex",gap:6,alignItems:"center"}}><LangToggle/>
+          <button onClick={()=>setAssBalloon(v=>!v)} style={{background:assBalloon?"#00a88418":"none",border:`1px solid ${assBalloon?"#00a88440":"transparent"}`,borderRadius:"50%",width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:assBalloon?"#00a884":T.muted,padding:0}}><Ico n="info" s={17}/></button>
+          <button style={{display:"flex",alignItems:"center",gap:4,padding:"6px 11px",background:"#00a884",border:"none",borderRadius:7,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}><Ico n="upload" s={13}/>{C.upload}</button>
+        </div>}/>
+        {assBalloon&&(
+          <div style={{position:"absolute",inset:0,zIndex:50}} onClick={()=>setAssBalloon(false)}>
+            <div onClick={e=>e.stopPropagation()} style={{position:"absolute",top:8,right:12,width:262,background:T.surface,borderRadius:14,boxShadow:"0 8px 32px #0005",border:`1px solid ${T.border}`}}>
+              <div style={{position:"absolute",top:-7,right:30,width:13,height:13,background:T.surface,borderLeft:`1px solid ${T.border}`,borderTop:`1px solid ${T.border}`,transform:"rotate(45deg)"}}/>
+              <div style={{padding:"11px 14px 8px",borderBottom:`1px solid ${T.divider}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:13,fontWeight:800,color:T.text}}>💡 {C.tips}</span>
+                <button onClick={()=>setAssBalloon(false)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:0,display:"flex"}}><Ico n="x" s={14}/></button>
+              </div>
+              {bi.map((it,i)=>(
+                <div key={i} style={{display:"flex",gap:9,padding:"9px 14px",borderBottom:i<bi.length-1?`1px solid ${T.divider}`:"none"}}>
+                  <span style={{fontSize:16,flexShrink:0}}>{it.icon}</span>
+                  <div><div style={{fontSize:11,fontWeight:700,color:T.text,marginBottom:1}}>{it.title}</div><div style={{fontSize:10,color:T.muted,lineHeight:1.5}}>{it.desc}</div></div>
+                </div>
+              ))}
+              <div style={{padding:"8px 14px"}}><button onClick={()=>setAssBalloon(false)} style={{width:"100%",padding:7,background:"#00a884",border:"none",borderRadius:8,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer"}}>{C.gotIt}</button></div>
+            </div>
+          </div>
+        )}
+        <div style={{display:"flex",background:T.header,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+          {tabs.map(({k,l})=>(
+            <button key={k} onClick={()=>{setAssTab(k);setAssBalloon(false);}} style={{flex:1,padding:"10px 4px",background:"none",border:"none",borderBottom:`2px solid ${assTab===k?"#00a884":"transparent"}`,color:assTab===k?"#00a884":T.muted,fontSize:11,fontWeight:assTab===k?700:400,cursor:"pointer",fontFamily:"inherit"}}>{l}</button>
+          ))}
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:13}}>
+          {assTab==="docs"&&(<>
+            <div style={{border:"2px dashed #00a88440",borderRadius:11,padding:16,textAlign:"center",marginBottom:12,background:"#00a88406"}}>
+              <div style={{fontSize:24,marginBottom:4}}>📂</div>
+              <div style={{fontSize:13,fontWeight:600,color:T.text}}>{L==="bm"?"Lepaskan fail atau klik untuk upload":"Drop files or click to upload"}</div>
+              <div style={{fontSize:11,color:T.muted,marginTop:2}}>PDF · DOCX · TXT · Max 10MB</div>
+            </div>
+            {KBFILES.map(f=>(
+              <div key={f.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:"11px 13px",marginBottom:7,display:"flex",alignItems:"center",gap:9}}>
+                <div style={{fontSize:22,flexShrink:0}}>📄</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:600,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.name}</div>
+                  <div style={{fontSize:10,color:T.muted}}>{f.size} · {f.queries} {L==="bm"?"pertanyaan":"queries"} · {f.acc}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3}}>
+                    <span style={{width:5,height:5,borderRadius:"50%",background:f.status==="indexed"?"#00a884":"#f59e0b"}}/>
+                    <span style={{fontSize:9,color:f.status==="indexed"?"#00a884":"#f59e0b",fontWeight:700}}>{f.status==="indexed"?(L==="bm"?"diindeks":"indexed"):(L==="bm"?"memproses":"processing")}</span>
+                  </div>
+                </div>
+                <button style={{background:"none",border:"none",cursor:"pointer",color:"#ef4444",padding:3,display:"flex"}}><Ico n="trash" s={14}/></button>
+              </div>
+            ))}
+          </>)}
+          {assTab==="catalog"&&(<>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontSize:11,color:T.muted}}>{CATALOG.length} {C.products}</div>
+              <button style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",background:"#00a884",border:"none",borderRadius:8,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}><Ico n="plus" s={12}/>{C.addProduct}</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              {CATALOG.map(p=>(
+                <div key={p.id} onClick={()=>setProdDetail(p)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:13,overflow:"hidden",cursor:"pointer"}}>
+                  <div style={{height:90,background:p.stock===0?"#8696a020":"#00a88415",display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,position:"relative"}}>
+                    {p.img}
+                    {p.stock===0&&<div style={{position:"absolute",inset:0,background:"#00000060",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:10,fontWeight:800,color:"#fff",background:"#ef4444",padding:"3px 8px",borderRadius:5}}>{C.soldOut}</span></div>}
+                  </div>
+                  <div style={{padding:"9px 10px"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                    <div style={{fontSize:10,color:T.muted,marginBottom:4}}>{p.sku} · {p.cat[L]}</div>
+                    <div style={{fontSize:13,fontWeight:800,color:"#00a884",marginBottom:4}}>{p.price}</div>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <span style={{fontSize:9,color:p.stock===0?"#ef4444":p.stock>0&&p.stock<=5?"#f59e0b":"#00a884",fontWeight:700}}>{p.stock===-1?"∞":p.stock===0?C.soldOutLbl:p.stock+" unit"}</span>
+                      <button onClick={e=>{e.stopPropagation();setProdDetail(p);}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,padding:2,display:"flex"}}><Ico n="edit" s={13}/></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>)}
+          {assTab==="media"&&(<>
+            <div style={{border:"2px dashed #00a88440",borderRadius:11,padding:16,textAlign:"center",marginBottom:12,background:"#00a88406"}}>
+              <div style={{fontSize:24,marginBottom:4}}>🖼️</div>
+              <div style={{fontSize:13,fontWeight:600,color:T.text}}>{L==="bm"?"Muat naik gambar, video atau fail":"Upload images, videos or files"}</div>
+              <div style={{fontSize:11,color:T.muted,marginTop:2}}>JPG · PNG · MP4 · PDF · Max 50MB</div>
+            </div>
+            {MEDIA.map(f=>(
+              <div key={f.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:"11px 13px",marginBottom:7,display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:44,height:44,borderRadius:9,background:T.card,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{f.thumb}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:600,color:T.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.name}</div>
+                  <div style={{fontSize:10,color:T.muted}}>{f.size} · {f.up}</div>
+                </div>
+                <div style={{display:"flex",gap:5}}>
+                  <button onClick={()=>cp(f.name,f.id)} style={{background:"none",border:"none",cursor:"pointer",color:copied===f.id?"#00a884":T.muted,padding:3,display:"flex"}}><Ico n="copy" s={13}/></button>
+                  <button style={{background:"none",border:"none",cursor:"pointer",color:"#ef4444",padding:3,display:"flex"}}><Ico n="trash" s={13}/></button>
+                </div>
+              </div>
+            ))}
+          </>)}
+          {assTab==="templates"&&(<>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{fontSize:11,color:T.muted}}>{TEMPLATES.length} {L==="bm"?"templat":"templates"}</div>
+              <button style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",background:"#00a884",border:"none",borderRadius:8,color:"#fff",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}><Ico n="plus" s={12}/>{C.newTemplate}</button>
+            </div>
+            {TEMPLATES.map(t=>(
+              <div key={t.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:11,padding:13,marginBottom:9}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:7}}>
+                  <div><div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:2}}>{t.name[L]}</div><span style={{fontSize:9,fontWeight:700,color:"#00a884",background:"#00a88415",padding:"2px 7px",borderRadius:5}}>{t.cat[L]}</span></div>
+                  <span style={{fontSize:10,color:T.muted}}>{t.uses} {C.uses}</span>
+                </div>
+                <div style={{fontSize:11,color:T.muted,lineHeight:1.7,background:T.card,borderRadius:8,padding:"7px 9px",marginBottom:7,whiteSpace:"pre-line"}}>{t.msg[L]}</div>
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={()=>cp(t.msg[L],t.id)} style={{flex:1,padding:7,background:copied===t.id?"#00a884":T.card,border:`1px solid ${copied===t.id?"#00a884":T.border}`,borderRadius:8,color:copied===t.id?"#fff":T.muted,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{copied===t.id?"✓ "+(L==="bm"?"Disalin":"Copied"):"Copy"}</button>
+                  <button onClick={()=>{setBcMsg(t.msg[L]);setBcView("compose");setBcStep(1);setTab("broadcast");}} style={{flex:1,padding:7,background:"#00a88415",border:"1px solid #00a88828",borderRadius:8,color:"#00a884",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🚀 {L==="bm"?"Guna":"Use"}</button>
+                  <button style={{padding:"7px 9px",background:"none",border:`1px solid ${T.border}`,borderRadius:8,cursor:"pointer",color:T.muted,display:"flex"}}><Ico n="edit" s={14}/></button>
+                </div>
+              </div>
+            ))}
+          </>)}
+        </div>
+      </div>
+    );
+  };
+
+  /* ════ v7: PRODUCT DETAIL MODAL ════ */
+  const ProdModal = () => {
+    if(!prodDetail) return null;
+    const p=prodDetail;
+    return(
+      <div style={{position:"fixed",inset:0,zIndex:3000,background:"#000a",display:"flex",alignItems:"flex-end"}} onClick={()=>setProdDetail(null)}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,margin:"0 auto",background:T.surface,borderRadius:"20px 20px 0 0",maxHeight:"80vh",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 16px 12px",borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+            <div style={{fontSize:16,fontWeight:800,color:T.text}}>{p.name}</div>
+            <button onClick={()=>setProdDetail(null)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:"50%",width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:T.text,padding:0}}><Ico n="x" s={14}/></button>
+          </div>
+          <div style={{flex:1,overflowY:"auto",padding:16}}>
+            <div style={{height:120,background:p.stock===0?"#8696a020":"#00a88415",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:60,position:"relative",marginBottom:14}}>
+              {p.img}
+              {p.stock===0&&<div style={{position:"absolute",inset:0,background:"#00000055",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:14}}><span style={{fontSize:14,fontWeight:800,color:"#fff",background:"#ef4444",padding:"5px 14px",borderRadius:8}}>{C.soldOut}</span></div>}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+              <div style={{background:T.card,borderRadius:10,padding:"10px 12px"}}><div style={{fontSize:9,color:T.muted,marginBottom:2}}>{C.price}</div><div style={{fontSize:20,fontWeight:900,color:"#00a884"}}>{p.price}</div></div>
+              <div style={{background:T.card,borderRadius:10,padding:"10px 12px"}}><div style={{fontSize:9,color:T.muted,marginBottom:2}}>{C.stock}</div><div style={{fontSize:20,fontWeight:900,color:p.stock===0?"#ef4444":p.stock>0&&p.stock<=5?"#f59e0b":"#00a884"}}>{p.stock===-1?"∞":p.stock===0?C.soldOutLbl:p.stock}</div></div>
+            </div>
+            <div style={{background:T.card,borderRadius:10,padding:"10px 12px",marginBottom:12}}>
+              {[["SKU",p.sku],[C.category,p.cat[L]],["Status",p.stock===0?C.soldOutLbl:(L==="bm"?"Aktif":"Active")]].map(([l,v])=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:`1px solid ${T.divider}`}}><span style={{fontSize:11,color:T.muted}}>{l}</span><span style={{fontSize:11,fontWeight:600,color:T.text}}>{v}</span></div>
+              ))}
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{cp(p.name+" — "+p.price,p.id);setProdDetail(null);}} style={{flex:1,padding:11,background:T.card,border:`1px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📋 {L==="bm"?"Salin":"Copy"}</button>
+              <button onClick={()=>setProdDetail(null)} style={{flex:2,padding:11,background:"#00a884",border:"none",borderRadius:10,color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ {L==="bm"?"Edit Produk":"Edit Product"}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /* ════ v7: DRAWER (More menu) ════ */
+  const Drawer = () => (
+    <>
+      <div style={{position:"fixed",inset:0,zIndex:800,background:"#000a"}} onClick={()=>setShowDrawer(false)}/>
+      <div style={{position:"fixed",top:0,right:0,bottom:0,width:270,zIndex:900,background:T.surface,display:"flex",flexDirection:"column",boxShadow:"-4px 0 20px #0004",maxWidth:"80vw"}}>
+        <div style={{padding:"16px 16px 14px",background:"#00a88412",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div><div style={{fontSize:16,fontWeight:800,color:T.text}}>{C.more}</div><div style={{fontSize:11,color:T.muted}}>OmniReply AI</div></div>
+          <button onClick={()=>setShowDrawer(false)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:"50%",width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:T.text,padding:0}}><Ico n="x" s={15}/></button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
+          {[{k:"kb",i:"kb",l:C.kb||"KB"},{k:"analytics",i:"chart",l:C.analytics},{k:"marketing",i:"megaphone",l:L==="bm"?"Pemasaran":"Marketing"},{k:"assets",i:"copy",l:C.assets},{k:"csat",i:"check",l:C.csat},{k:"settings",i:"cog",l:C.settings}].map(it=>(
+            <button key={it.k} onClick={()=>{setTab(it.k);setShowDrawer(false);setChat(null);setCProfile(null);}} style={{width:"100%",display:"flex",alignItems:"center",gap:13,padding:"13px 18px",background:tab===it.k?"#00a88410":"none",border:"none",cursor:"pointer",textAlign:"left"}}>
+              <span style={{color:tab===it.k?"#00a884":T.muted,display:"flex",width:22}}><Ico n={it.i} s={19}/></span>
+              <span style={{fontSize:14,fontWeight:tab===it.k?700:500,color:tab===it.k?"#00a884":T.text}}>{it.l}</span>
+            </button>
+          ))}
+          <div style={{height:1,background:T.divider,margin:"8px 18px"}}/>
+          <button onClick={()=>{setShowP(true);setShowDrawer(false);}} style={{width:"100%",display:"flex",alignItems:"center",gap:13,padding:"13px 18px",background:"none",border:"none",cursor:"pointer",textAlign:"left"}}>
+            <span style={{color:"#f59e0b",display:"flex",width:22}}><Ico n="crown" s={19}/></span>
+            <span style={{fontSize:14,fontWeight:600,color:"#f59e0b"}}>{C.upgrade}</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+
+  /* \u2550\u2550 ConnectWA \u2014 Baileys QR + risk-ack gate (locked screen 14) \u2550\u2550 */
+  const ConnectWA = () => {
+    const steps=[C.waStep1,C.waStep2,C.waStep3];
+    const stepIdx = waStep==="risk"?0:waStep==="qr"?1:2;
+    const Stepper = () => (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 14px",background:T.header,borderBottom:`1px solid ${T.border}`}}>
+        {steps.map((s,i)=>(
+          <div key={s} style={{display:"flex",alignItems:"center",gap:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:5}}>
+              <span style={{width:20,height:20,borderRadius:"50%",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:i<=stepIdx?"#00a884":T.card,color:i<=stepIdx?"#fff":T.muted,border:`1px solid ${i<=stepIdx?"#00a884":T.border}`}}>{i<stepIdx?"\u2713":i+1}</span>
+              <span style={{fontSize:11,fontWeight:i===stepIdx?700:400,color:i===stepIdx?T.text:T.muted}}>{s}</span>
+            </div>
+            {i<steps.length-1&&<span style={{width:14,height:2,borderRadius:1,background:i<stepIdx?"#00a884":T.border}}/>}
+          </div>
+        ))}
+      </div>
+    );
+    const reset=()=>{setShowWA(false);setWaStep("risk");setWaAck(false);};
+    return (
+      <div style={{display:"flex",flexDirection:"column",height:"100%",background:T.bg}}>
+        <H title={C.connectWA} back={reset} right={<LangToggle/>}/>
+        <Stepper/>
+        <div style={{flex:1,overflowY:"auto",padding:16}}>
+          {waStep==="risk"&&(
+            <>
+              <div style={{textAlign:"center",marginBottom:14}}>
+                <div style={{fontSize:40,marginBottom:6}}>\U0001F4F1</div>
+                <div style={{fontSize:17,fontWeight:800,color:T.text,marginBottom:4}}>{C.riskTitle}</div>
+                <div style={{fontSize:12,color:T.muted,lineHeight:1.6,maxWidth:320,margin:"0 auto"}}>{C.riskBody}</div>
+              </div>
+              <div style={{background:"#f59e0b10",border:"1px solid #f59e0b28",borderRadius:13,padding:14,marginBottom:12}}>
+                {[C.risk1,C.risk2,C.risk3].map((r,i)=>(
+                  <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:i<2?`1px solid ${T.divider}`:"none"}}>
+                    <span style={{fontSize:15,flexShrink:0,marginTop:1}}>{i===0?"\u26A0\uFE0F":i===1?"\U0001F422":"\U0001F512"}</span>
+                    <span style={{fontSize:12,color:T.text,lineHeight:1.55}}>{r}</span>
+                  </div>
+                ))}
+              </div>
+              <div onClick={()=>setWaAck(!waAck)} style={{display:"flex",alignItems:"center",gap:11,padding:13,background:T.surface,border:`1px solid ${waAck?"#00a884":T.border}`,borderRadius:12,cursor:"pointer",marginBottom:14}}>
+                <span style={{width:22,height:22,borderRadius:6,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:waAck?"#00a884":"transparent",border:`2px solid ${waAck?"#00a884":T.muted}`,color:"#fff",fontSize:13,fontWeight:700}}>{waAck?"\u2713":""}</span>
+                <span style={{fontSize:13,fontWeight:600,color:T.text}}>{C.riskAck}</span>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={reset} style={{flex:1,padding:13,background:"transparent",border:`1px solid ${T.border}`,borderRadius:12,color:T.text,fontSize:13,fontWeight:600,cursor:"pointer"}}>{C.riskBack}</button>
+                <button disabled={!waAck} onClick={()=>setWaStep("qr")} style={{flex:2,padding:13,background:waAck?"#00a884":T.card,border:"none",borderRadius:12,color:waAck?"#fff":T.muted,fontSize:14,fontWeight:700,cursor:waAck?"pointer":"not-allowed",opacity:waAck?1:.6}}>{C.riskAckCta}</button>
+              </div>
+            </>
+          )}
+          {waStep==="qr"&&(
+            <>
+              <div style={{textAlign:"center",marginBottom:14}}>
+                <div style={{fontSize:16,fontWeight:800,color:T.text,marginBottom:4}}>{C.qrTitle}</div>
+                <div style={{fontSize:12,color:T.muted,lineHeight:1.6,maxWidth:300,margin:"0 auto"}}>{C.qrSteps}</div>
+              </div>
+              <div style={{width:220,height:220,margin:"0 auto 14px",background:"#fff",borderRadius:16,padding:14,boxShadow:"0 4px 20px #00000018",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{width:"100%",height:"100%",backgroundImage:"repeating-linear-gradient(0deg,#111 0 8px,#fff 8px 16px),repeating-linear-gradient(90deg,#111 0 8px,transparent 8px 16px)",backgroundBlendMode:"multiply",borderRadius:4,position:"relative",opacity:.92}}>
+                  <div style={{position:"absolute",inset:"38% 38%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:6}}><span style={{fontSize:20}}>\U0001F4AC</span></div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,marginBottom:16}}>
+                <span style={{width:8,height:8,borderRadius:"50%",background:"#00a884",display:"inline-block"}}/>
+                <span style={{fontSize:12,color:T.muted}}>{C.qrWaiting}</span>
+              </div>
+              <button style={{width:"100%",padding:11,background:"#00a88415",border:"1px solid #00a88822",borderRadius:11,color:"#00a884",fontSize:12,fontWeight:700,cursor:"pointer",marginBottom:8}}>\U0001F504 {C.qrRefresh}</button>
+              <button onClick={()=>{setWaStep("done");setWaLive(true);}} style={{width:"100%",padding:13,background:"#00a884",border:"none",borderRadius:12,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{C.waStep3} \u2192</button>
+            </>
+          )}
+          {waStep==="done"&&(
+            <>
+              <div style={{textAlign:"center",marginBottom:16,paddingTop:8}}>
+                <div style={{width:72,height:72,borderRadius:"50%",background:"#00a88420",border:"2px solid #00a884",display:"flex",alignItems:"center",justifyContent:"center",fontSize:34,margin:"0 auto 12px"}}>\u2713</div>
+                <div style={{fontSize:18,fontWeight:800,color:T.text,marginBottom:4}}>{C.waConnected}</div>
+                <div style={{fontSize:12,color:T.muted,lineHeight:1.6,maxWidth:300,margin:"0 auto"}}>{C.waConnectedSub}</div>
+              </div>
+              <div style={{background:T.surface,borderRadius:12,overflow:"hidden",border:`1px solid ${T.border}`,marginBottom:14}}>
+                {[[C.waNumber,"+60 12-888 0001",null],[C.waSession,C.waLive,"#00a884"]].map(([l,v,c],i,arr)=>(
+                  <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 15px",borderBottom:i<arr.length-1?`1px solid ${T.divider}`:"none"}}>
+                    <span style={{fontSize:13,color:T.text}}>{l}</span>
+                    {c?<span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:7,height:7,borderRadius:"50%",background:c}}/><span style={{fontSize:13,fontWeight:700,color:c}}>{v}</span></span>:<span style={{fontSize:13,color:T.muted,fontWeight:600}}>{v}</span>}
+                  </div>
+                ))}
+              </div>
+              <button onClick={reset} style={{width:"100%",padding:13,background:"#00a884",border:"none",borderRadius:12,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>{C.waDoneBtn}</button>
+              <button onClick={()=>{setWaLive(false);setWaStep("risk");}} style={{width:"100%",padding:11,background:"transparent",border:"1px solid #ef444433",borderRadius:11,color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer"}}>{C.waDisconnect}</button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  /* ── TABS ── */
+  const TABS=[{k:"chats",i:"chat",l:{bm:"Sembang",en:"Chats"},badge:contacts.reduce((s,c)=>s+c.unread,0)},{k:"broadcast",i:"broadcast",l:{bm:"Broadcast",en:"Broadcast"}},{k:"contacts",i:"contacts",l:{bm:"Kenalan",en:"Contacts"}},{k:"automation",i:"zap",l:{bm:"Auto",en:"Auto"}},{k:"more",i:"menu",l:{bm:"Lagi",en:"More"}}];
+
+  const Screen = () => {
+    if(showWA)            return <ConnectWA/>;
+    if(tab==="chats")     return chat?<ChatView/>:<ChatList/>;
+    if(tab==="broadcast") return <Broadcast/>;
+    if(tab==="contacts")  return cProfile?<ContactProfile c={cProfile}/>:<Contacts/>;
+    if(tab==="csat")      return <CSAT/>;
+    if(tab==="assets")    return <Assets/>;
+    if(tab==="kb")        return <KB/>;
+    if(tab==="analytics") return <Analytics/>;
+    if(tab==="marketing") return <Marketing/>;
+    if(tab==="automation")return <Automations/>;
+    if(tab==="settings")  return <Settings/>;
+    return null;
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:T.bg,fontFamily:"'Helvetica Neue',Arial,sans-serif",color:T.text,maxWidth:430,margin:"0 auto",overflow:"hidden",position:"relative"}}>
+      <style>{`*{box-sizing:border-box;margin:0;padding:0}::-webkit-scrollbar{display:none}button{font-family:inherit;cursor:pointer}`}</style>
+      <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}><Screen/></div>
+      {!(tab==="chats"&&chat)&&!cProfile&&!showWA&&(
+        <div style={{display:"flex",background:T.header,borderTop:`1px solid ${T.border}`,padding:"4px 0 max(4px,env(safe-area-inset-bottom))",flexShrink:0}}>
+          {TABS.map(t=>{
+            const moreActive=t.k==="more"&&["more","kb","analytics","marketing","assets","csat","settings"].includes(tab);
+            const active=tab===t.k||moreActive;
+            return(
+            <button key={t.k} onClick={()=>{ if(t.k==="more"){setShowDrawer(true);return;} setTab(t.k);setChat(null);setCProfile(null);if(t.k!=="settings")setSettSec(null);if(t.k!=="marketing"){setSelFW(null);setFwTab("guide");}if(t.k==="broadcast"){setBcView("list");setBcDetail(null);} }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:1,background:"none",border:"none",padding:"4px 0",position:"relative"}}>
+              <span style={{color:active?"#00a884":T.muted,display:"flex"}}><Ico n={t.i} s={20}/></span>
+              <span style={{fontSize:8,color:active?"#00a884":T.muted,fontWeight:active?700:400}}>{t.l[L]}</span>
+              {t.badge>0&&<span style={{position:"absolute",top:2,right:"14%",width:14,height:14,borderRadius:"50%",background:"#00a884",color:"#fff",fontSize:8,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{t.badge}</span>}
+              {active&&<span style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:16,height:2,borderRadius:1,background:"#00a884"}}/>}
+            </button>
+            );
+          })}
+        </div>
+      )}
+      {showOB&&<Onboarding/>}
+      {showP&&<Pricing/>}
+      {showFWPicker&&<FWPicker/>}
+      {showDrawer&&<Drawer/>}
+      <ProdModal/>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
