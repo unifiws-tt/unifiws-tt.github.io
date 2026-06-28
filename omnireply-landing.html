@@ -4,528 +4,483 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>OmniReply — WhatsApp inbox for Malaysian SMEs</title>
-<!-- build: phase2.5 landing v1 -->
 <meta name="description" content="OmniReply auto-replies to your WhatsApp, Instagram and Messenger in BM and English — trained on your own price list and FAQ. Built for Malaysian SMEs." />
-<script>
-  window.__omrDeps = false;
-  function omrLoad(list, done){
-    var i = 0;
-    function next(){
-      if (i >= list.length){ done && done(); return; }
-      var s = document.createElement("script");
-      s.src = list[i].urls[list[i].at || 0];
-      s.onload = function(){ i++; next(); };
-      s.onerror = function(){
-        list[i].at = (list[i].at || 0) + 1;
-        if (list[i].at >= list[i].urls.length){
-          document.getElementById("root").innerHTML =
-            '<div style="font-family:sans-serif;padding:40px;text-align:center;color:#54656f">Could not load OmniReply. Please open this page in Safari or Chrome.</div>';
-          return;
-        }
-        next();
-      };
-      document.head.appendChild(s);
-    }
-    next();
-  }
-</script>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  if (window.tailwind) tailwind.config = { darkMode: "class" };
-</script>
 <style>
-  @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  @keyframes omrRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  .omr-rise{animation:omrRise .5s ease both}
-  @keyframes omrPop{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
-  .omr-pop{animation:omrPop .35s ease both}
-  .omr-grid-bg{background-image:radial-gradient(#d7e0e2 1px,transparent 1px);background-size:22px 22px}
-  .dark .omr-grid-bg{background-image:radial-gradient(#1d2a31 1px,transparent 1px)}
+  :root{
+    --green:#00a884; --green-d:#008f72; --green-25:#25d366;
+    --ink:#111b21; --mut:#667781; --surf:#f0f2f5; --line:#e9edef;
+    --card:#ffffff; --bubble:#d9fdd3; --chatbg:#efeae2; --pageBg:#ffffff;
+  }
+  html.dark{
+    --ink:#e9edef; --mut:#8696a0; --surf:#2a3942; --line:#2a3942;
+    --card:#202c33; --bubble:#005c4b; --chatbg:#0b141a; --pageBg:#0b141a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--pageBg); color:var(--ink); -webkit-text-size-adjust:100%; line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  .narrow{max-width:760px;margin:0 auto;padding:0 20px}
+  header.nav{position:sticky;top:0;z-index:30;background:var(--pageBg);border-bottom:1px solid var(--line)}
+  .nav-in{height:62px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:17px}
+  .logo .mark{width:32px;height:32px;border-radius:9px;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:900;font-size:15px}
+  .nav-links{display:none;gap:26px;font-size:14px;font-weight:500}
+  .nav-links a{color:var(--mut)}
+  .nav-tools{display:flex;align-items:center;gap:8px}
+  .pill{font-size:12px;font-weight:700;padding:7px 10px;border-radius:9px;background:var(--surf);color:var(--ink);border:none;cursor:pointer}
+  .btn{display:inline-block;padding:11px 18px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:var(--green);color:#fff;transition:background .15s}
+  .btn:hover{background:var(--green-d)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.lg{padding:14px 24px;font-size:16px}
+  .btn.block{display:block;width:100%;text-align:center}
+  .btn.white{background:#fff;color:var(--green-d)}
+  .hide-sm{display:none}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px}
+  .eyebrow .ln{width:24px;height:1px;background:var(--green)}
+  .eyebrow span{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--green-d)}
+  html.dark .eyebrow span{color:var(--green-25)}
+  .hero{position:relative;overflow:hidden}
+  .grid-bg{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(#d7e0e2 1px,transparent 1px);background-size:22px 22px}
+  html.dark .grid-bg{background-image:radial-gradient(#1d2a31 1px,transparent 1px)}
+  .hero-in{position:relative;display:grid;grid-template-columns:1fr;gap:42px;align-items:center;padding:52px 0 76px}
+  h1.h{font-size:34px;line-height:1.1;font-weight:900;letter-spacing:-.02em}
+  .lead{margin-top:18px;font-size:17px;color:var(--mut);max-width:520px}
+  .cta-row{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px}
+  .note{margin-top:15px;font-size:12px;color:var(--mut)}
+  .proof{margin-top:26px;display:flex;align-items:center;gap:12px}
+  .stack-av{display:flex}
+  .stack-av .av{width:32px;height:32px;border-radius:50%;background:#dfe5e7;border:2px solid var(--pageBg);display:grid;place-items:center;font-size:10px;font-weight:700;color:#54656f;margin-left:-8px}
+  html.dark .stack-av .av{background:#2a3942;color:#8696a0}
+  .stack-av .av:first-child{margin-left:0}
+  .proof .ptxt{font-size:12px;color:var(--mut)}
+  .demo-label{text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-bottom:12px}
+  .phone{position:relative;width:290px;margin:0 auto}
+  .phone .frame{border-radius:38px;background:#111b21;padding:10px;box-shadow:0 24px 50px rgba(0,0,0,.28)}
+  .phone .screen{border-radius:30px;overflow:hidden;background:var(--chatbg)}
+  .phone .top{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--green-d);color:#fff}
+  .phone .top .av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:12px;font-weight:600}
+  .phone .top .nm{font-size:14px;font-weight:600;line-height:1.1}
+  .phone .top .on{font-size:11px;color:rgba(255,255,255,.8)}
+  .phone .pbody{padding:12px;min-height:226px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:82%;padding:8px 12px;border-radius:12px;font-size:13px;box-shadow:0 1px 1px rgba(0,0,0,.05)}
+  .msg.them{align-self:flex-start;background:var(--card);border-top-left-radius:4px;color:var(--ink)}
+  .msg.me{align-self:flex-end;background:var(--bubble);border-top-right-radius:4px;color:var(--ink);animation:pop .35s ease both}
+  .tag{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.08);color:var(--green-d)}
+  html.dark .tag{color:var(--green-25)}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  section{padding:60px 0}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 38px}
+  h2.h{font-size:26px;font-weight:800;line-height:1.25}
+  .body-txt{margin-top:16px;color:var(--mut)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px}
+  .stats{display:grid;grid-template-columns:1fr;gap:12px}
+  .stat{padding:20px}
+  .stat .n{font-size:30px;font-weight:900;color:var(--green)}
+  .stat .l{font-size:12px;color:var(--mut);margin-top:8px}
+  .two{display:grid;grid-template-columns:1fr;gap:40px;align-items:start}
+  .feat-grid{display:grid;grid-template-columns:1fr;gap:12px}
+  .feat{padding:20px}
+  .feat .ic{width:40px;height:40px;border-radius:12px;background:#e7f4ef;display:grid;place-items:center;font-size:18px;margin-bottom:12px}
+  html.dark .feat .ic{background:#0c2e27}
+  .feat .t{font-weight:700}
+  .feat .d{font-size:14px;color:var(--mut);margin-top:4px}
+  .how-grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .step{padding:24px}
+  .step .num{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:700;margin-bottom:12px}
+  .step .t{font-weight:700}
+  .step .d{font-size:14px;color:var(--mut);margin-top:4px}
+  .price-grid{display:grid;grid-template-columns:1fr;gap:16px;max-width:840px;margin:0 auto}
+  .plan{padding:24px;position:relative}
+  .plan.pop{outline:2px solid var(--green)}
+  .plan .badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--green);color:#fff}
+  .plan .nm{font-weight:700}
+  .plan .pr{margin:8px 0}
+  .plan .pr .amt{font-size:30px;font-weight:900}
+  .plan .pr .per{color:var(--mut)}
+  .plan ul{list-style:none;margin:16px 0}
+  .plan li{font-size:14px;color:var(--mut);display:flex;gap:8px;margin:8px 0}
+  .plan li .ck{color:var(--green);font-weight:700}
+  .faq-list{display:flex;flex-direction:column;gap:12px}
+  .faq button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;text-align:left;background:none;border:none;cursor:pointer;color:var(--ink)}
+  .faq .q{font-size:14px;font-weight:700}
+  .faq .pl{font-size:20px;color:var(--mut);transition:transform .2s;flex-shrink:0}
+  .faq.open .pl{transform:rotate(45deg)}
+  .faq .a{padding:0 20px 16px;font-size:14px;color:var(--mut);display:none}
+  .faq.open .a{display:block}
+  .final{border-radius:24px;background:var(--green-d);color:#fff;padding:54px 28px;text-align:center;position:relative;overflow:hidden}
+  .final .grid-bg{opacity:.1}
+  .final h2{font-size:28px;font-weight:900;line-height:1.2;max-width:560px;margin:0 auto;position:relative}
+  .final p{margin:16px auto 0;color:rgba(255,255,255,.85);max-width:460px;position:relative}
+  .final .btn{margin-top:26px;position:relative}
+  footer{border-top:1px solid var(--line)}
+  .foot{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;padding:40px 0}
+  .foot .ft{font-size:12px;color:var(--mut);margin-top:8px}
+  .foot .cp{font-size:12px;color:var(--mut)}
+  @media(min-width:640px){
+    .stats{grid-template-columns:repeat(3,1fr)}
+    .feat-grid{grid-template-columns:1fr 1fr}
+    .foot{flex-direction:row;justify-content:space-between;text-align:left}
+    .hide-sm{display:inline-block}
+  }
+  @media(min-width:768px){
+    h1.h{font-size:46px}
+    .nav-links{display:flex}
+    .how-grid{grid-template-columns:repeat(3,1fr)}
+    .price-grid{grid-template-columns:repeat(3,1fr)}
+    .two{grid-template-columns:1fr 1fr}
+    .final h2{font-size:34px}
+  }
+  @media(min-width:980px){
+    .hero-in{grid-template-columns:1fr 1fr}
+    .feat-grid{grid-template-columns:repeat(3,1fr)}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body class="bg-white dark:bg-[#0b141a]">
-<div id="root">
-  <div style="font-family:sans-serif;padding:40px;text-align:center;color:#54656f">Loading OmniReply…</div>
-</div>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <span class="logo"><span class="mark">O</span><span>OmniReply</span></span>
+    <nav class="nav-links">
+      <a href="#features" data-i="nav_features">Features</a>
+      <a href="#pricing" data-i="nav_pricing">Pricing</a>
+      <a href="#faq" data-i="nav_faq">FAQ</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="pill" id="langBtn">BM</button>
+      <button class="pill" id="darkBtn">&#127769;</button>
+      <a class="btn hide-sm" href="https://unifiws-tt.github.io/omnireply.html" data-i="cta">Start free trial</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" style="padding:0">
+  <div class="grid-bg"></div>
+  <div class="wrap hero-in">
+    <div>
+      <div class="eyebrow"><span class="ln"></span><span data-i="hero_eyebrow"></span></div>
+      <h1 class="h" data-i="hero_h"></h1>
+      <p class="lead" data-i="hero_sub"></p>
+      <div class="cta-row">
+        <a class="btn lg" href="https://unifiws-tt.github.io/omnireply.html" data-i="hero_cta"></a>
+        <a class="btn ghost lg" href="#how" data-i="hero_alt"></a>
+      </div>
+      <p class="note" data-i="hero_note"></p>
+      <div class="proof">
+        <div class="stack-av"><span class="av">AR</span><span class="av">DT</span><span class="av">NH</span><span class="av">FH</span></div>
+        <span class="ptxt" data-i="trust"></span>
+      </div>
+    </div>
+    <div>
+      <div class="demo-label" data-i="demo_label"></div>
+      <div class="phone">
+        <div class="frame">
+          <div class="screen">
+            <div class="top">
+              <span class="av">AR</span>
+              <div><div class="nm">Aisyah Rahman</div><div class="on" id="onlineTxt">online</div></div>
+            </div>
+            <div class="pbody">
+              <div class="msg them" data-i="demo_q"></div>
+              <div class="msg me" data-i="demo_a"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tag"><span data-i="demo_tag"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap two">
+    <div>
+      <div class="eyebrow"><span class="ln"></span><span data-i="problem_eyebrow"></span></div>
+      <h2 class="h" data-i="problem_h"></h2>
+      <p class="body-txt" data-i="problem_body"></p>
+    </div>
+    <div class="stats">
+      <div class="card stat"><div class="n" data-i="stat1n"></div><div class="l" data-i="stat1"></div></div>
+      <div class="card stat"><div class="n" data-i="stat2n"></div><div class="l" data-i="stat2"></div></div>
+      <div class="card stat"><div class="n" data-i="stat3n"></div><div class="l" data-i="stat3"></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow" style="justify-content:center"><span class="ln"></span><span data-i="feat_eyebrow"></span></div>
+      <h2 class="h" data-i="feat_h"></h2>
+    </div>
+    <div class="feat-grid" id="featGrid"></div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow" style="justify-content:center"><span class="ln"></span><span data-i="how_eyebrow"></span></div>
+      <h2 class="h" data-i="how_h"></h2>
+    </div>
+    <div class="how-grid" id="howGrid"></div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow" style="justify-content:center"><span class="ln"></span><span data-i="price_eyebrow"></span></div>
+      <h2 class="h" data-i="price_h"></h2>
+    </div>
+    <div class="price-grid" id="priceGrid"></div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="narrow">
+    <div class="sec-head">
+      <div class="eyebrow" style="justify-content:center"><span class="ln"></span><span data-i="faq_eyebrow"></span></div>
+      <h2 class="h" data-i="faq_h"></h2>
+    </div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="final">
+      <div class="grid-bg"></div>
+      <h2 data-i="final_h"></h2>
+      <p data-i="final_sub"></p>
+      <a class="btn white lg" href="https://unifiws-tt.github.io/omnireply.html" data-i="final_cta"></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <span class="logo"><span class="mark">O</span><span>OmniReply</span></span>
+      <div class="ft" data-i="foot_tag"></div>
+    </div>
+    <div class="cp">&copy; 2026 OmniReply &middot; <span data-i="foot_rights"></span></div>
+  </div>
+</footer>
 
 <script>
-  omrLoad([
-    { urls: [
-      "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
-      "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
-      "https://unpkg.com/react@18.3.1/umd/react.production.min.js"
-    ]},
-    { urls: [
-      "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
-      "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
-      "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
-    ]},
-    { urls: [
-      "https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js",
-      "https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.2/babel.min.js",
-      "https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"
-    ]}
-  ], function(){
-    window.__omrDeps = true;
-    var src = document.getElementById("omr-src").textContent;
-    try {
-      var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
-      (0, eval)(out);
-    } catch (e) {
-      document.getElementById("root").innerHTML =
-        '<div style="font-family:sans-serif;padding:40px;text-align:center;color:#e53935">Build error: ' + (e && e.message ? e.message : e) + '</div>';
+(function(){
+  "use strict";
+  var T = {
+    en: {
+      nav_features:"Features", nav_pricing:"Pricing", nav_faq:"FAQ", cta:"Start free trial",
+      hero_eyebrow:"WhatsApp-first inbox",
+      hero_h:"Reply to every customer in seconds \u2014 even while you sleep.",
+      hero_sub:"OmniReply answers WhatsApp, Instagram and Messenger in Bahasa Malaysia and English, trained on your own price list and FAQ. One inbox for the whole team.",
+      hero_cta:"Start free trial \u2192", hero_alt:"See how it works",
+      hero_note:"No credit card \u00b7 Connect in 2 minutes \u00b7 Cancel anytime",
+      trust:"Trusted by Malaysian SMEs from KL to Kuching",
+      demo_label:"Live reply demo",
+      demo_q:"Tudung navy dah restock ke? Pos ke Penang berapa?",
+      demo_a:"Tudung navy dah restock pagi tadi \ud83c\udf89 Pos ke Penang RM8 guna J&T (2\u20133 hari). Nak saya simpankan satu untuk you?",
+      demo_tag:"Answered from your knowledge base \u00b7 0.8s",
+      problem_eyebrow:"The 11pm problem",
+      problem_h:"Customers message after hours. You lose the sale by morning.",
+      problem_body:"Most Malaysian buyers expect a reply within minutes. Miss the window and they buy from the next seller. OmniReply replies instantly, in the right language, with answers pulled straight from your own catalogue.",
+      stat1n:"82%", stat1:"of buyers expect a reply in under 5 minutes",
+      stat2n:"1 in 3", stat2:"of sales lost are simply unanswered messages",
+      stat3n:"42s", stat3:"average response time with OmniReply",
+      feat_eyebrow:"Everything in one inbox",
+      feat_h:"Built for how Malaysian SMEs actually sell.",
+      features:[
+        ["\ud83d\udcac","Unified inbox","WhatsApp, Instagram DM and Messenger in one screen \u2014 no more app-switching."],
+        ["\u2728","AI auto-reply","Instant answers in BM or English, in your shop's tone. Hands off to you when unsure."],
+        ["\ud83d\udcda","Knowledge base","Upload your price list, FAQ or catalogue. Replies come straight from your real info."],
+        ["\ud83d\udc65","Contacts & tags","Every customer saved with tags, spend and history. Find anyone in a second."],
+        ["\ud83d\udce3","Broadcast","Send Raya promos or restock alerts to opted-in customers, scheduled or instant."],
+        ["\ud83d\udcca","Analytics","See messages, response time, AI-resolved rate and CSAT at a glance."],
+        ["\ud83e\uddd1","Team seats","Add agents, assign chats, see who's online. Owner stays in control."],
+        ["\ud83d\udd50","Business hours","Auto-reply runs your hours; quiet outside them. Set once, forget it."],
+        ["\ud83d\udd00","Smart routing","Hand off to a human the moment a chat needs one \u2014 nothing falls through."],
+        ["\ud83c\udfad","Reply tones","Friendly, formal or playful \u2014 match your brand on every message."],
+        ["\ud83d\udd17","Your number","Keep your existing WhatsApp number. Connect as a linked device, no migration."],
+        ["\ud83d\udd12","Secure by design","Your keys stay server-side in an encrypted vault. Disconnect anytime."]
+      ],
+      how_eyebrow:"Live in minutes",
+      how_h:"Three steps to a self-running inbox.",
+      how:[
+        ["Connect WhatsApp","Scan one QR code to link your number as a companion device."],
+        ["Add your knowledge","Drop in your price list, FAQ or catalogue \u2014 PDF, sheet, or a link."],
+        ["Go live","OmniReply starts replying. You jump in only when you want to."]
+      ],
+      price_eyebrow:"Simple pricing",
+      price_h:"Start free. Upgrade when you grow.",
+      price_per:"/mo", price_most:"Most popular", price_cta:"Start free trial",
+      plans:[
+        ["Free","0",["1 WhatsApp number","50 AI replies/mo","1 agent seat","Basic inbox"],false],
+        ["Starter","129",["1 channel","1,500 AI replies/mo","2 agent seats","Knowledge base","Broadcast"],true],
+        ["Growth","649",["All channels","Unlimited AI replies","6 agent seats","Full analytics","Priority routing"],false]
+      ],
+      faq_eyebrow:"Questions",
+      faq_h:"Everything you might ask.",
+      faq:[
+        ["Will I get banned for connecting WhatsApp?","OmniReply links to your number as a companion (linked) device \u2014 the same way WhatsApp Web works. Use a business number you control and keep your phone online. Unofficial connections always carry a small risk, so we make the risk clear before you connect."],
+        ["Does it really reply in Bahasa Malaysia?","Yes. OmniReply detects the customer's language and answers in BM or English in your shop's tone \u2014 Manglish included. You set the default and it adapts per chat."],
+        ["Do I need to keep my phone on?","Yes, like WhatsApp Web your phone needs to stay online for messages to sync. Most owners keep it charging at the counter."],
+        ["Can my team use it together?","Yes. Add agent seats, assign chats and see who's online. The owner stays in control of settings and billing."],
+        ["What happens when the AI isn't sure?","It hands the chat to a human \u2014 you or an agent \u2014 instead of guessing. You can also turn auto-reply off entirely and use OmniReply as a shared inbox."],
+        ["Can I cancel anytime?","Yes. No lock-in. Disconnect your number and cancel from billing whenever you like."]
+      ],
+      final_h:"Stop losing sales to slow replies.",
+      final_sub:"Connect your WhatsApp in two minutes and let OmniReply handle the rest.",
+      final_cta:"Start free trial \u2192",
+      foot_tag:"WhatsApp-first inbox for Malaysian SMEs.",
+      foot_rights:"All rights reserved.",
+      online:"online"
+    },
+    bm: {
+      nav_features:"Ciri", nav_pricing:"Harga", nav_faq:"Soalan", cta:"Mula percubaan percuma",
+      hero_eyebrow:"Peti masuk WhatsApp",
+      hero_h:"Balas setiap pelanggan dalam saat \u2014 walaupun masa anda tidur.",
+      hero_sub:"OmniReply menjawab WhatsApp, Instagram dan Messenger dalam Bahasa Malaysia dan English, dilatih dengan senarai harga dan FAQ anda sendiri. Satu peti masuk untuk seluruh pasukan.",
+      hero_cta:"Mula percubaan percuma \u2192", hero_alt:"Lihat cara ia berfungsi",
+      hero_note:"Tanpa kad kredit \u00b7 Sambung dalam 2 minit \u00b7 Batal bila-bila masa",
+      trust:"Dipercayai PKS Malaysia dari KL hingga Kuching",
+      demo_label:"Demo balasan langsung",
+      demo_q:"Tudung navy dah restock ke? Pos ke Penang berapa?",
+      demo_a:"Tudung navy dah restock pagi tadi \ud83c\udf89 Pos ke Penang RM8 guna J&T (2\u20133 hari). Nak saya simpankan satu untuk you?",
+      demo_tag:"Dijawab dari pangkalan ilmu anda \u00b7 0.8s",
+      problem_eyebrow:"Masalah pukul 11 malam",
+      problem_h:"Pelanggan mesej lewat malam. Menjelang pagi, jualan dah lesap.",
+      problem_body:"Kebanyakan pembeli Malaysia mahu balasan dalam beberapa minit. Terlepas waktu tu, mereka beli dari penjual lain. OmniReply balas serta-merta, dalam bahasa yang betul, dengan jawapan terus dari katalog anda sendiri.",
+      stat1n:"82%", stat1:"pembeli mahu balasan dalam bawah 5 minit",
+      stat2n:"1 dari 3", stat2:"jualan hilang hanyalah mesej yang tak dibalas",
+      stat3n:"42s", stat3:"purata masa balas dengan OmniReply",
+      feat_eyebrow:"Semua dalam satu peti masuk",
+      feat_h:"Dibina untuk cara PKS Malaysia berniaga.",
+      features:[
+        ["\ud83d\udcac","Peti masuk bersatu","WhatsApp, Instagram DM dan Messenger dalam satu skrin \u2014 tak payah tukar app."],
+        ["\u2728","Auto-balas AI","Jawapan serta-merta dalam BM atau English, ikut nada kedai anda. Serah pada anda bila tak pasti."],
+        ["\ud83d\udcda","Pangkalan ilmu","Muat naik senarai harga, FAQ atau katalog. Balasan terus dari info sebenar anda."],
+        ["\ud83d\udc65","Kenalan & tag","Setiap pelanggan disimpan dengan tag, perbelanjaan dan sejarah. Cari sesiapa dalam sesaat."],
+        ["\ud83d\udce3","Siaran","Hantar promo Raya atau alert stok baru kepada pelanggan yang opt-in, berjadual atau serta-merta."],
+        ["\ud83d\udcca","Analitik","Lihat mesej, masa balas, kadar selesai AI dan CSAT sekali pandang."],
+        ["\ud83e\uddd1","Kerusi pasukan","Tambah ejen, agih chat, lihat siapa online. Pemilik kekal mengawal."],
+        ["\ud83d\udd50","Waktu bisnes","Auto-balas ikut waktu anda; senyap di luar waktu. Set sekali, lupakan."],
+        ["\ud83d\udd00","Penghalaan pintar","Serah kepada manusia sebaik chat perlukannya \u2014 tiada yang terlepas."],
+        ["\ud83c\udfad","Nada balasan","Mesra, formal atau ceria \u2014 padan jenama anda pada setiap mesej."],
+        ["\ud83d\udd17","Nombor anda","Kekalkan nombor WhatsApp sedia ada. Sambung sebagai peranti pendamping, tanpa migrasi."],
+        ["\ud83d\udd12","Selamat dari asas","Kunci anda kekal di server dalam vault tersulit. Putuskan bila-bila masa."]
+      ],
+      how_eyebrow:"Siap dalam minit",
+      how_h:"Tiga langkah ke peti masuk yang jalan sendiri.",
+      how:[
+        ["Sambung WhatsApp","Imbas satu kod QR untuk pautkan nombor sebagai peranti pendamping."],
+        ["Tambah ilmu anda","Masukkan senarai harga, FAQ atau katalog \u2014 PDF, sheet, atau pautan."],
+        ["Mula beroperasi","OmniReply mula membalas. Anda masuk hanya bila mahu."]
+      ],
+      price_eyebrow:"Harga mudah",
+      price_h:"Mula percuma. Naik taraf bila berkembang.",
+      price_per:"/bln", price_most:"Paling popular", price_cta:"Mula percubaan percuma",
+      plans:[
+        ["Percuma","0",["1 nombor WhatsApp","50 balasan AI/bln","1 kerusi ejen","Peti masuk asas"],false],
+        ["Starter","129",["1 saluran","1,500 balasan AI/bln","2 kerusi ejen","Pangkalan ilmu","Siaran"],true],
+        ["Growth","649",["Semua saluran","Balasan AI tanpa had","6 kerusi ejen","Analitik penuh","Penghalaan keutamaan"],false]
+      ],
+      faq_eyebrow:"Soalan",
+      faq_h:"Semua yang anda mungkin tanya.",
+      faq:[
+        ["Adakah saya akan diban kerana sambung WhatsApp?","OmniReply pautkan nombor anda sebagai peranti pendamping (linked device) \u2014 sama cara WhatsApp Web berfungsi. Guna nombor bisnes yang anda kawal dan pastikan telefon dalam talian. Sambungan tidak rasmi sentiasa ada sedikit risiko, jadi kami terangkan risiko itu sebelum anda sambung."],
+        ["Betul ke ia balas dalam Bahasa Malaysia?","Ya. OmniReply mengesan bahasa pelanggan dan menjawab dalam BM atau English ikut nada kedai anda \u2014 Manglish pun boleh. Anda set lalai dan ia sesuaikan ikut chat."],
+        ["Perlu ke telefon saya sentiasa hidup?","Ya, macam WhatsApp Web telefon anda perlu kekal online untuk mesej selari. Kebanyakan pemilik biarkan ia mengecas di kaunter."],
+        ["Boleh ke pasukan saya guna bersama?","Boleh. Tambah kerusi ejen, agih chat dan lihat siapa online. Pemilik kekal mengawal tetapan dan bil."],
+        ["Apa jadi bila AI tak pasti?","Ia serahkan chat kepada manusia \u2014 anda atau ejen \u2014 bukannya meneka. Anda juga boleh matikan auto-balas terus dan guna OmniReply sebagai peti masuk berkongsi."],
+        ["Boleh batal bila-bila masa?","Boleh. Tiada terikat. Putuskan nombor dan batal dari bil bila-bila masa anda suka."]
+      ],
+      final_h:"Berhenti hilang jualan kerana balasan lambat.",
+      final_sub:"Sambung WhatsApp anda dalam dua minit dan biar OmniReply uruskan selebihnya.",
+      final_cta:"Mula percubaan percuma \u2192",
+      foot_tag:"Peti masuk WhatsApp untuk PKS Malaysia.",
+      foot_rights:"Hak cipta terpelihara.",
+      online:"dalam talian"
     }
-  });
-</script>
+  };
 
-<script type="text/babel-source" id="omr-src">
-var useState = React.useState;
-var useEffect = React.useEffect;
-var useRef = React.useRef;
+  var lang = "en";
+  var htmlEl = document.documentElement;
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 
-/* ---------- design tokens (match app mockup) ---------- */
-var GREEN = "#00a884";
-var GREEN_D = "#008f72";
-var card = "bg-white dark:bg-[#202c33] border border-[#e9edef] dark:border-[#2a3942] rounded-2xl";
-var mut = "text-[#667781] dark:text-[#8696a0]";
-var ink = "text-[#111b21] dark:text-[#e9edef]";
-
-/* ---------- copy (EN / BM) ---------- */
-var T = {
-  en: {
-    nav_features: "Features", nav_pricing: "Pricing", nav_faq: "FAQ",
-    login: "Log in", cta: "Start free trial",
-    hero_eyebrow: "WhatsApp-first inbox",
-    hero_h: "Reply to every customer in seconds — even while you sleep.",
-    hero_sub: "OmniReply answers WhatsApp, Instagram and Messenger in Bahasa Malaysia and English, trained on your own price list and FAQ. One inbox for the whole team.",
-    hero_cta: "Start free trial", hero_alt: "See how it works",
-    hero_note: "No credit card · Connect in 2 minutes · Cancel anytime",
-    trust: "Trusted by Malaysian SMEs from KL to Kuching",
-    demo_label: "Live reply demo",
-    demo_q: "Tudung navy dah restock ke? Pos ke Penang berapa?",
-    demo_a: "Tudung navy dah restock pagi tadi 🎉 Pos ke Penang RM8 guna J&T (2–3 hari). Nak saya simpankan satu untuk you?",
-    demo_tag: "Answered from your knowledge base · 0.8s",
-    problem_eyebrow: "The 11pm problem",
-    problem_h: "Customers message after hours. You lose the sale by morning.",
-    problem_body: "Most Malaysian buyers expect a reply within minutes. Miss the window and they buy from the next seller. OmniReply replies instantly, in the right language, with answers pulled straight from your own catalogue.",
-    stat1: "of buyers expect a reply in under 5 minutes", stat1n: "82%",
-    stat2: "of sales lost are simply unanswered messages", stat2n: "1 in 3",
-    stat3: "average response time with OmniReply", stat3n: "42s",
-    feat_eyebrow: "Everything in one inbox",
-    feat_h: "Built for how Malaysian SMEs actually sell.",
-    features: [
-      ["Unified inbox", "WhatsApp, Instagram DM and Messenger in one screen — no more app-switching.", "💬"],
-      ["AI auto-reply", "Instant answers in BM or English, in your shop's tone. Hands off to you when unsure.", "✨"],
-      ["Knowledge base", "Upload your price list, FAQ or catalogue. Replies come straight from your real info.", "📚"],
-      ["Contacts & tags", "Every customer saved with tags, spend and history. Find anyone in a second.", "👥"],
-      ["Broadcast", "Send Raya promos or restock alerts to opted-in customers, scheduled or instant.", "📣"],
-      ["Analytics", "See messages, response time, AI-resolved rate and CSAT at a glance.", "📊"],
-      ["Team seats", "Add agents, assign chats, see who's online. Owner stays in control.", "🧑‍💼"],
-      ["Business hours", "Auto-reply runs your hours; quiet outside them. Set once, forget it.", "🕐"],
-      ["Smart routing", "Hand off to a human the moment a chat needs one — nothing falls through.", "🔀"],
-      ["Reply tones", "Friendly, formal or playful — match your brand on every message.", "🎭"],
-      ["Your number", "Keep your existing WhatsApp number. Connect as a linked device, no migration.", "🔗"],
-      ["Secure by design", "Your keys stay server-side in an encrypted vault. Disconnect anytime.", "🔒"]
-    ],
-    how_eyebrow: "Live in minutes",
-    how_h: "Three steps to a self-running inbox.",
-    how: [
-      ["Connect WhatsApp", "Scan one QR code to link your number as a companion device."],
-      ["Add your knowledge", "Drop in your price list, FAQ or catalogue — PDF, sheet, or a link."],
-      ["Go live", "OmniReply starts replying. You jump in only when you want to."]
-    ],
-    price_eyebrow: "Simple pricing",
-    price_h: "Start free. Upgrade when you grow.",
-    price_per: "/mo", price_most: "Most popular", price_cta: "Start free trial",
-    plans: [
-      ["Free", "0", ["1 WhatsApp number", "50 AI replies/mo", "1 agent seat", "Basic inbox"], false],
-      ["Starter", "129", ["1 channel", "1,500 AI replies/mo", "2 agent seats", "Knowledge base", "Broadcast"], true],
-      ["Growth", "649", ["All channels", "Unlimited AI replies", "6 agent seats", "Full analytics", "Priority routing"], false]
-    ],
-    faq_eyebrow: "Questions",
-    faq_h: "Everything you might ask.",
-    faq: [
-      ["Will I get banned for connecting WhatsApp?", "OmniReply links to your number as a companion (linked) device — the same way WhatsApp Web works. Use a business number you control and keep your phone online. Unofficial connections always carry a small risk, so we make the risk clear before you connect."],
-      ["Does it really reply in Bahasa Malaysia?", "Yes. OmniReply detects the customer's language and answers in BM or English in your shop's tone — Manglish included. You set the default and it adapts per chat."],
-      ["Do I need to keep my phone on?", "Yes, like WhatsApp Web your phone needs to stay online for messages to sync. Most owners keep it charging at the counter."],
-      ["Can my team use it together?", "Yes. Add agent seats, assign chats and see who's online. The owner stays in control of settings and billing."],
-      ["What happens when the AI isn't sure?", "It hands the chat to a human — you or an agent — instead of guessing. You can also turn auto-reply off entirely and use OmniReply as a shared inbox."],
-      ["Can I cancel anytime?", "Yes. No lock-in. Disconnect your number and cancel from billing whenever you like."]
-    ],
-    final_h: "Stop losing sales to slow replies.",
-    final_sub: "Connect your WhatsApp in two minutes and let OmniReply handle the rest.",
-    final_cta: "Start free trial",
-    foot_tag: "WhatsApp-first inbox for Malaysian SMEs.",
-    foot_rights: "All rights reserved."
-  },
-  bm: {
-    nav_features: "Ciri", nav_pricing: "Harga", nav_faq: "Soalan",
-    login: "Log masuk", cta: "Mula percubaan percuma",
-    hero_eyebrow: "Peti masuk WhatsApp",
-    hero_h: "Balas setiap pelanggan dalam saat — walaupun masa anda tidur.",
-    hero_sub: "OmniReply menjawab WhatsApp, Instagram dan Messenger dalam Bahasa Malaysia dan English, dilatih dengan senarai harga dan FAQ anda sendiri. Satu peti masuk untuk seluruh pasukan.",
-    hero_cta: "Mula percubaan percuma", hero_alt: "Lihat cara ia berfungsi",
-    hero_note: "Tanpa kad kredit · Sambung dalam 2 minit · Batal bila-bila masa",
-    trust: "Dipercayai PKS Malaysia dari KL hingga Kuching",
-    demo_label: "Demo balasan langsung",
-    demo_q: "Tudung navy dah restock ke? Pos ke Penang berapa?",
-    demo_a: "Tudung navy dah restock pagi tadi 🎉 Pos ke Penang RM8 guna J&T (2–3 hari). Nak saya simpankan satu untuk you?",
-    demo_tag: "Dijawab dari pangkalan ilmu anda · 0.8s",
-    problem_eyebrow: "Masalah pukul 11 malam",
-    problem_h: "Pelanggan mesej lewat malam. Menjelang pagi, jualan dah lesap.",
-    problem_body: "Kebanyakan pembeli Malaysia mahu balasan dalam beberapa minit. Terlepas waktu tu, mereka beli dari penjual lain. OmniReply balas serta-merta, dalam bahasa yang betul, dengan jawapan terus dari katalog anda sendiri.",
-    stat1: "pembeli mahu balasan dalam bawah 5 minit", stat1n: "82%",
-    stat2: "jualan hilang hanyalah mesej yang tak dibalas", stat2n: "1 dari 3",
-    stat3: "purata masa balas dengan OmniReply", stat3n: "42s",
-    feat_eyebrow: "Semua dalam satu peti masuk",
-    feat_h: "Dibina untuk cara PKS Malaysia berniaga.",
-    features: [
-      ["Peti masuk bersatu", "WhatsApp, Instagram DM dan Messenger dalam satu skrin — tak payah tukar app.", "💬"],
-      ["Auto-balas AI", "Jawapan serta-merta dalam BM atau English, ikut nada kedai anda. Serah pada anda bila tak pasti.", "✨"],
-      ["Pangkalan ilmu", "Muat naik senarai harga, FAQ atau katalog. Balasan terus dari info sebenar anda.", "📚"],
-      ["Kenalan & tag", "Setiap pelanggan disimpan dengan tag, perbelanjaan dan sejarah. Cari sesiapa dalam sesaat.", "👥"],
-      ["Siaran", "Hantar promo Raya atau alert stok baru kepada pelanggan yang opt-in, berjadual atau serta-merta.", "📣"],
-      ["Analitik", "Lihat mesej, masa balas, kadar selesai AI dan CSAT sekali pandang.", "📊"],
-      ["Kerusi pasukan", "Tambah ejen, agih chat, lihat siapa online. Pemilik kekal mengawal.", "🧑‍💼"],
-      ["Waktu bisnes", "Auto-balas ikut waktu anda; senyap di luar waktu. Set sekali, lupakan.", "🕐"],
-      ["Penghalaan pintar", "Serah kepada manusia sebaik chat perlukannya — tiada yang terlepas.", "🔀"],
-      ["Nada balasan", "Mesra, formal atau ceria — padan jenama anda pada setiap mesej.", "🎭"],
-      ["Nombor anda", "Kekalkan nombor WhatsApp sedia ada. Sambung sebagai peranti pendamping, tanpa migrasi.", "🔗"],
-      ["Selamat dari asas", "Kunci anda kekal di server dalam vault tersulit. Putuskan bila-bila masa.", "🔒"]
-    ],
-    how_eyebrow: "Siap dalam minit",
-    how_h: "Tiga langkah ke peti masuk yang jalan sendiri.",
-    how: [
-      ["Sambung WhatsApp", "Imbas satu kod QR untuk pautkan nombor sebagai peranti pendamping."],
-      ["Tambah ilmu anda", "Masukkan senarai harga, FAQ atau katalog — PDF, sheet, atau pautan."],
-      ["Mula beroperasi", "OmniReply mula membalas. Anda masuk hanya bila mahu."]
-    ],
-    price_eyebrow: "Harga mudah",
-    price_h: "Mula percuma. Naik taraf bila berkembang.",
-    price_per: "/bln", price_most: "Paling popular", price_cta: "Mula percubaan percuma",
-    plans: [
-      ["Percuma", "0", ["1 nombor WhatsApp", "50 balasan AI/bln", "1 kerusi ejen", "Peti masuk asas"], false],
-      ["Starter", "129", ["1 saluran", "1,500 balasan AI/bln", "2 kerusi ejen", "Pangkalan ilmu", "Siaran"], true],
-      ["Growth", "649", ["Semua saluran", "Balasan AI tanpa had", "6 kerusi ejen", "Analitik penuh", "Penghalaan keutamaan"], false]
-    ],
-    faq_eyebrow: "Soalan",
-    faq_h: "Semua yang anda mungkin tanya.",
-    faq: [
-      ["Adakah saya akan diban kerana sambung WhatsApp?", "OmniReply pautkan nombor anda sebagai peranti pendamping (linked device) — sama cara WhatsApp Web berfungsi. Guna nombor bisnes yang anda kawal dan pastikan telefon dalam talian. Sambungan tidak rasmi sentiasa ada sedikit risiko, jadi kami terangkan risiko itu sebelum anda sambung."],
-      ["Betul ke ia balas dalam Bahasa Malaysia?", "Ya. OmniReply mengesan bahasa pelanggan dan menjawab dalam BM atau English ikut nada kedai anda — Manglish pun boleh. Anda set lalai dan ia sesuaikan ikut chat."],
-      ["Perlu ke telefon saya sentiasa hidup?", "Ya, macam WhatsApp Web telefon anda perlu kekal online untuk mesej selari. Kebanyakan pemilik biarkan ia mengecas di kaunter."],
-      ["Boleh ke pasukan saya guna bersama?", "Boleh. Tambah kerusi ejen, agih chat dan lihat siapa online. Pemilik kekal mengawal tetapan dan bil."],
-      ["Apa jadi bila AI tak pasti?", "Ia serahkan chat kepada manusia — anda atau ejen — bukannya meneka. Anda juga boleh matikan auto-balas terus dan guna OmniReply sebagai peti masuk berkongsi."],
-      ["Boleh batal bila-bila masa?", "Boleh. Tiada terikat. Putuskan nombor dan batal dari bil bila-bila masa anda suka."]
-    ],
-    final_h: "Berhenti hilang jualan kerana balasan lambat.",
-    final_sub: "Sambung WhatsApp anda dalam dua minit dan biar OmniReply uruskan selebihnya.",
-    final_cta: "Mula percubaan percuma",
-    foot_tag: "Peti masuk WhatsApp untuk PKS Malaysia.",
-    foot_rights: "Hak cipta terpelihara."
+  function buildFeatures(t){
+    var box=document.getElementById("featGrid"); var h=""; var i;
+    for(i=0;i<t.features.length;i++){
+      var f=t.features[i];
+      h+='<div class="card feat"><div class="ic">'+f[0]+'</div><div class="t">'+esc(f[1])+'</div><div class="d">'+esc(f[2])+'</div></div>';
+    }
+    box.innerHTML=h;
   }
-};
+  function buildHow(t){
+    var box=document.getElementById("howGrid"); var h=""; var i;
+    for(i=0;i<t.how.length;i++){
+      h+='<div class="card step"><div class="num">'+(i+1)+'</div><div class="t">'+esc(t.how[i][0])+'</div><div class="d">'+esc(t.how[i][1])+'</div></div>';
+    }
+    box.innerHTML=h;
+  }
+  function buildPrice(t){
+    var box=document.getElementById("priceGrid"); var h=""; var i,j;
+    for(i=0;i<t.plans.length;i++){
+      var p=t.plans[i]; var pop=p[3];
+      h+='<div class="card plan'+(pop?" pop":"")+'">';
+      if(pop){h+='<div class="badge">'+esc(t.price_most)+'</div>';}
+      h+='<div class="nm">'+esc(p[0])+'</div>';
+      h+='<div class="pr"><span class="amt">RM'+esc(p[1])+'</span><span class="per">'+esc(t.price_per)+'</span></div>';
+      h+='<ul>';
+      for(j=0;j<p[2].length;j++){h+='<li><span class="ck">\u2713</span>'+esc(p[2][j])+'</li>';}
+      h+='</ul>';
+      h+='<a class="btn block'+(pop?"":" ghost")+'" href="https://unifiws-tt.github.io/omnireply.html">'+esc(t.price_cta)+'</a>';
+      h+='</div>';
+    }
+    box.innerHTML=h;
+  }
+  function buildFaq(t){
+    var box=document.getElementById("faqList"); var h=""; var i;
+    for(i=0;i<t.faq.length;i++){
+      h+='<div class="card faq"><button data-fi="'+i+'"><span class="q">'+esc(t.faq[i][0])+'</span><span class="pl">+</span></button><div class="a">'+esc(t.faq[i][1])+'</div></div>';
+    }
+    box.innerHTML=h;
+    var btns=box.querySelectorAll("button[data-fi]"); var k;
+    for(k=0;k<btns.length;k++){
+      btns[k].onclick=function(){
+        var faq=this.parentNode;
+        var wasOpen=faq.className.indexOf("open")>-1;
+        var all=box.querySelectorAll(".faq"); var m;
+        for(m=0;m<all.length;m++){all[m].className="card faq";}
+        if(!wasOpen){faq.className="card faq open";}
+      };
+    }
+  }
+  function apply(){
+    var t=T[lang];
+    var nodes=document.querySelectorAll("[data-i]"); var i;
+    for(i=0;i<nodes.length;i++){
+      var key=nodes[i].getAttribute("data-i");
+      if(t[key]!==undefined){ nodes[i].textContent=t[key]; }
+    }
+    document.getElementById("onlineTxt").textContent=t.online;
+    document.getElementById("langBtn").textContent=(lang==="en")?"BM":"EN";
+    buildFeatures(t); buildHow(t); buildPrice(t); buildFaq(t);
+  }
 
-/* ---------- atoms ---------- */
-function Logo(props){
-  var sz = props.sz || "w-8 h-8 text-sm";
-  return (
-    <span className="inline-flex items-center gap-2 font-bold">
-      <span className={"rounded-lg bg-[" + GREEN + "] text-white grid place-items-center font-black " + sz}>O</span>
-      <span className={ink}>OmniReply</span>
-    </span>
-  );
-}
-function Btn(props){
-  var kind = props.kind || "primary";
-  var k = kind === "primary"
-    ? "bg-[" + GREEN + "] hover:bg-[" + GREEN_D + "] text-white"
-    : kind === "ghost"
-    ? "bg-transparent hover:bg-[#f0f2f5] dark:hover:bg-[#2a3942] " + ink + " border border-[#e9edef] dark:border-[#2a3942]"
-    : "bg-[#f0f2f5] dark:bg-[#2a3942] " + ink;
-  return (
-    <button onClick={props.onClick}
-      className={"px-5 py-2.5 rounded-xl text-sm font-semibold transition " + k + " " + (props.className || "")}>
-      {props.children}
-    </button>
-  );
-}
-function Eyebrow(props){
-  return (
-    <div className="inline-flex items-center gap-2 mb-3">
-      <span className={"w-6 h-px bg-[" + GREEN + "]"}></span>
-      <span className={"text-xs font-bold uppercase tracking-widest text-[" + GREEN_D + "] dark:text-[#25d366]"}>{props.children}</span>
-    </div>
-  );
-}
+  document.getElementById("langBtn").onclick=function(){ lang=(lang==="en")?"bm":"en"; apply(); };
+  document.getElementById("darkBtn").onclick=function(){
+    var on=htmlEl.className.indexOf("dark")>-1;
+    htmlEl.className=on?"":"dark";
+    document.getElementById("darkBtn").innerHTML=on?"\ud83c\udf19":"\u2600\ufe0f";
+  };
 
-/* ---------- phone-frame hero demo ---------- */
-function PhoneDemo(props){
-  var t = props.t;
-  var step = props.step;
-  return (
-    <div className="relative mx-auto w-[290px]">
-      <div className="rounded-[2.4rem] bg-[#111b21] p-2.5 shadow-2xl shadow-black/30 ring-1 ring-black/10">
-        <div className="rounded-[1.9rem] overflow-hidden bg-[#efeae2] dark:bg-[#0b141a]">
-          <div className={"flex items-center gap-2.5 px-3.5 py-3 bg-[" + GREEN_D + "] text-white"}>
-            <span className="w-8 h-8 rounded-full bg-white/20 grid place-items-center text-xs font-semibold">AR</span>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">Aisyah Rahman</div>
-              <div className="text-[11px] text-white/80">{props.online}</div>
-            </div>
-          </div>
-          <div className="p-3 space-y-2 min-h-[230px]">
-            <div className="flex justify-start">
-              <div className="max-w-[82%] bg-white dark:bg-[#202c33] rounded-xl rounded-tl-sm px-3 py-2 text-sm shadow-sm text-[#111b21] dark:text-[#e9edef]">
-                {t.demo_q}
-              </div>
-            </div>
-            {step >= 1 ? (
-              <div className="flex justify-end omr-pop">
-                <div className="max-w-[82%] bg-[#d9fdd3] dark:bg-[#005c4b] rounded-xl rounded-tr-sm px-3 py-2 text-sm shadow-sm text-[#111b21] dark:text-[#e9edef]">
-                  {t.demo_a}
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-end">
-                <div className="bg-[#d9fdd3] dark:bg-[#005c4b] rounded-xl rounded-tr-sm px-3 py-2.5 shadow-sm flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"0ms"}}></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"120ms"}}></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"240ms"}}></span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {step >= 1 ? (
-        <div className={"omr-pop absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white dark:bg-[#202c33] border border-[#e9edef] dark:border-[#2a3942] shadow-sm text-[" + GREEN_D + "] dark:text-[#25d366]"}>
-          ✨ {t.demo_tag}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-/* ---------- FAQ item ---------- */
-function Faq(props){
-  var open = props.open;
-  return (
-    <div className={card + " overflow-hidden"}>
-      <button onClick={props.onClick} className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left">
-        <span className={"text-sm font-semibold " + ink}>{props.q}</span>
-        <span className={"shrink-0 text-lg transition " + mut + (open ? " rotate-45" : "")}>+</span>
-      </button>
-      {open ? <div className={"px-5 pb-4 text-sm leading-relaxed " + mut}>{props.a}</div> : null}
-    </div>
-  );
-}
-
-/* ---------- app ---------- */
-function App(){
-  var ls = useState("en"); var lang = ls[0], setLang = ls[1];
-  var ds = useState(false); var dark = ds[0], setDark = ds[1];
-  var ss = useState(0); var step = ss[0], setStep = ss[1];
-  var fs = useState(0); var faqOpen = fs[0], setFaqOpen = fs[1];
-  var ms = useState(false); var menu = ms[0], setMenu = ms[1];
-  var t = T[lang];
-
-  useEffect(function(){ document.documentElement.classList.toggle("dark", dark); }, [dark]);
-  useEffect(function(){
-    var id = setTimeout(function(){ setStep(1); }, 1100);
-    return function(){ clearTimeout(id); };
-  }, [lang]);
-
-  function go(){ window.location.href = "https://unifiws-tt.github.io/omnireply.html"; }
-
-  return (
-    <div className={ink}>
-      {/* nav */}
-      <header className="sticky top-0 z-30 bg-white/85 dark:bg-[#0b141a]/85 backdrop-blur border-b border-[#e9edef] dark:border-[#2a3942]">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          <Logo />
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
-            <a href="#features" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_features}</a>
-            <a href="#pricing" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_pricing}</a>
-            <a href="#faq" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_faq}</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <button onClick={function(){ setLang(lang === "en" ? "bm" : "en"); }}
-              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#f0f2f5] dark:bg-[#2a3942]">{lang === "en" ? "BM" : "EN"}</button>
-            <button onClick={function(){ setDark(!dark); }}
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-[#f0f2f5] dark:bg-[#2a3942]">{dark ? "☀️" : "🌙"}</button>
-            <button onClick={go} className="hidden sm:block"><Btn className="!py-2">{t.cta}</Btn></button>
-          </div>
-        </div>
-      </header>
-
-      {/* hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 omr-grid-bg opacity-60"></div>
-        <div className="relative max-w-6xl mx-auto px-5 pt-14 pb-20 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="omr-rise">
-            <Eyebrow>{t.hero_eyebrow}</Eyebrow>
-            <h1 className={"text-4xl md:text-5xl font-black leading-[1.08] tracking-tight " + ink}>{t.hero_h}</h1>
-            <p className={"mt-5 text-base md:text-lg leading-relaxed max-w-lg " + mut}>{t.hero_sub}</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <button onClick={go}><Btn className="!px-6 !py-3 text-base">{t.hero_cta} →</Btn></button>
-              <a href="#how"><Btn kind="ghost" className="!px-6 !py-3 text-base">{t.hero_alt}</Btn></a>
-            </div>
-            <p className={"mt-4 text-xs " + mut}>{t.hero_note}</p>
-            <div className="mt-7 flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {["AR","DT","NH","FH"].map(function(x,i){
-                  return <span key={i} className="w-8 h-8 rounded-full bg-[#dfe5e7] dark:bg-[#2a3942] ring-2 ring-white dark:ring-[#0b141a] grid place-items-center text-[10px] font-semibold text-[#54656f] dark:text-[#8696a0]">{x}</span>;
-                })}
-              </div>
-              <span className={"text-xs " + mut}>{t.trust}</span>
-            </div>
-          </div>
-          <div className="omr-rise" style={{animationDelay:"120ms"}}>
-            <div className="mb-3 text-center">
-              <span className={"text-xs font-semibold uppercase tracking-wide " + mut}>{t.demo_label}</span>
-            </div>
-            <PhoneDemo t={t} step={step} online={lang === "en" ? "online" : "dalam talian"} />
-          </div>
-        </div>
-      </section>
-
-      {/* problem + stats */}
-      <section className="max-w-6xl mx-auto px-5 py-16">
-        <div className="grid lg:grid-cols-2 gap-10 items-start">
-          <div>
-            <Eyebrow>{t.problem_eyebrow}</Eyebrow>
-            <h2 className={"text-2xl md:text-3xl font-bold leading-snug " + ink}>{t.problem_h}</h2>
-            <p className={"mt-4 leading-relaxed " + mut}>{t.problem_body}</p>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-3">
-            {[[t.stat1n,t.stat1],[t.stat2n,t.stat2],[t.stat3n,t.stat3]].map(function(s,i){
-              return (
-                <div key={i} className={card + " p-5"}>
-                  <div className={"text-3xl font-black text-[" + GREEN + "]"}>{s[0]}</div>
-                  <div className={"text-xs mt-2 leading-snug " + mut}>{s[1]}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* features */}
-      <section id="features" className="max-w-6xl mx-auto px-5 py-16">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <Eyebrow>{t.feat_eyebrow}</Eyebrow>
-          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.feat_h}</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {t.features.map(function(f,i){
-            return (
-              <div key={i} className={card + " p-5 transition hover:-translate-y-0.5 hover:shadow-sm"}>
-                <div className="w-10 h-10 rounded-xl bg-[#e7f4ef] dark:bg-[#0c2e27] grid place-items-center text-lg mb-3">{f[2]}</div>
-                <div className={"font-semibold " + ink}>{f[0]}</div>
-                <div className={"text-sm mt-1 leading-relaxed " + mut}>{f[1]}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* how it works */}
-      <section id="how" className="max-w-6xl mx-auto px-5 py-16">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <Eyebrow>{t.how_eyebrow}</Eyebrow>
-          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.how_h}</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {t.how.map(function(s,i){
-            return (
-              <div key={i} className="relative">
-                <div className={card + " p-6 h-full"}>
-                  <div className={"w-9 h-9 rounded-full bg-[" + GREEN + "] text-white grid place-items-center font-bold mb-3"}>{i+1}</div>
-                  <div className={"font-semibold " + ink}>{s[0]}</div>
-                  <div className={"text-sm mt-1 leading-relaxed " + mut}>{s[1]}</div>
-                </div>
-                {i < 2 ? <span className={"hidden md:block absolute top-1/2 -right-2 text-[" + GREEN + "]"}>→</span> : null}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* pricing */}
-      <section id="pricing" className="max-w-6xl mx-auto px-5 py-16">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <Eyebrow>{t.price_eyebrow}</Eyebrow>
-          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.price_h}</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-          {t.plans.map(function(p,i){
-            var pop = p[4];
-            return (
-              <div key={i} className={card + " p-6 relative " + (pop ? "ring-2 ring-[" + GREEN + "]" : "")}>
-                {pop ? <span className={"absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold px-3 py-1 rounded-full bg-[" + GREEN + "] text-white"}>{t.price_most}</span> : null}
-                <div className={"font-bold " + ink}>{p[0]}</div>
-                <div className="my-2">
-                  <span className={"text-3xl font-black " + ink}>RM{p[1]}</span>
-                  <span className={mut}>{t.price_per}</span>
-                </div>
-                <ul className="space-y-2 my-4">
-                  {p[3].map(function(f,j){
-                    return <li key={j} className={"text-sm flex gap-2 " + mut}><span className={"text-[" + GREEN + "]"}>✓</span>{f}</li>;
-                  })}
-                </ul>
-                <button onClick={go} className="w-full">
-                  <Btn kind={pop ? "primary" : "ghost"} className="w-full">{t.price_cta}</Btn>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* faq */}
-      <section id="faq" className="max-w-3xl mx-auto px-5 py-16">
-        <div className="text-center mb-10">
-          <Eyebrow>{t.faq_eyebrow}</Eyebrow>
-          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.faq_h}</h2>
-        </div>
-        <div className="space-y-3">
-          {t.faq.map(function(f,i){
-            return <Faq key={i} q={f[0]} a={f[1]} open={faqOpen === i} onClick={function(){ setFaqOpen(faqOpen === i ? -1 : i); }} />;
-          })}
-        </div>
-      </section>
-
-      {/* final cta */}
-      <section className="max-w-6xl mx-auto px-5 pb-20">
-        <div className={"rounded-3xl bg-[" + GREEN_D + "] text-white px-8 py-14 text-center relative overflow-hidden"}>
-          <div className="absolute inset-0 opacity-10 omr-grid-bg"></div>
-          <div className="relative">
-            <h2 className="text-2xl md:text-4xl font-black leading-tight max-w-2xl mx-auto">{t.final_h}</h2>
-            <p className="mt-4 text-white/85 max-w-lg mx-auto">{t.final_sub}</p>
-            <button onClick={go} className="mt-7">
-              <span className={"inline-block px-7 py-3.5 rounded-xl bg-white text-[" + GREEN_D + "] font-bold text-base hover:bg-white/90 transition"}>{t.final_cta} →</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* footer */}
-      <footer className="border-t border-[#e9edef] dark:border-[#2a3942]">
-        <div className="max-w-6xl mx-auto px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <Logo />
-            <p className={"text-xs mt-2 " + mut}>{t.foot_tag}</p>
-          </div>
-          <p className={"text-xs " + mut}>© 2026 OmniReply · {t.foot_rights}</p>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  apply();
+})();
 </script>
 </body>
 </html>
