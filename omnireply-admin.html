@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OmniReply · God-Mode</title>
+<style>
+  :root { --bg:#020617; --card:#0f172a; --ring:#1e293b; --txt:#e2e8f0; --mut:#64748b; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:15px/1.4 -apple-system,system-ui,sans-serif; }
+  .wrap { max-width:480px; margin:0 auto; padding:16px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:600; background:#334155; color:#cbd5e1; }
+  .pill.green { background:rgba(16,185,129,.18); color:#6ee7b7; }
+  .pill.red { background:rgba(239,68,68,.18); color:#fca5a5; }
+  .pill.amber { background:rgba(245,158,11,.18); color:#fcd34d; }
+  .card { background:var(--card); border:1px solid var(--ring); border-radius:14px; padding:14px; }
+  h1 { font-size:18px; margin:0; display:inline; }
+  h2 { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:18px 0 8px; }
+  input { width:100%; background:#1e293b; border:0; border-radius:10px; padding:11px 12px; color:#fff; font-size:15px; margin-bottom:10px; outline:none; }
+  input:focus { box-shadow:0 0 0 2px #475569; }
+  button { border:0; border-radius:10px; padding:10px; font-size:13px; font-weight:600; color:#fff; background:#334155; cursor:pointer; }
+  .btn-primary { width:100%; background:#f1f5f9; color:#0f172a; padding:12px; font-size:15px; }
+  .btn-link { background:none; color:var(--mut); text-decoration:underline; font-size:12px; width:100%; margin-top:6px; padding:6px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+  .danger { background:rgba(239,68,68,.22); color:#fca5a5; }
+  .ok { background:rgba(16,185,129,.2); color:#6ee7b7; }
+  .err { background:#450a0a; color:#fca5a5; border:1px solid #7f1d1d; border-radius:10px; padding:10px; font-size:12px; margin:10px 0; }
+  .mut { color:var(--mut); font-size:12px; }
+  .trunc { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stack > * + * { margin-top:10px; }
+  .blast { background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.4); border-radius:14px; padding:14px; }
+  .log { background:var(--card); border:1px solid var(--ring); border-radius:10px; padding:10px; font:11px ui-monospace,monospace; color:var(--mut); }
+  .log div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const URL_ = "https://jmtcdegcsrxjenxjnxse.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptdGNkZWdjc3J4amVueGpueHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzMjYxMDgsImV4cCI6MjA5NjkwMjEwOH0.MAIA-mUwOXtVfsrkDB7txlJxeWDrRANc-hLwm5gL8ng";
+
+let TOKEN = null, EMAIL = null, LOG = [];
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const logIt = m => { LOG.unshift(new Date().toLocaleTimeString()+" · "+m); LOG=LOG.slice(0,8); const e=$("log"); if(e) e.innerHTML = LOG.map(l=>`<div>${esc(l)}</div>`).join("")||'<div>no actions</div>'; };
+
+async function authReq(path, body) {
+  const r = await fetch(URL_+"/auth/v1/"+path, {
+    method:"POST", headers:{ "apikey":ANON, "Content-Type":"application/json" }, body:JSON.stringify(body)
+  });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.error_description || d.msg || d.error || ("auth "+r.status));
+  return d;
+}
+async function callFn(action, extra={}) {
+  const r = await fetch(URL_+"/functions/v1/omr-admin", {
+    method:"POST",
+    headers:{ "apikey":ANON, "Authorization":"Bearer "+TOKEN, "Content-Type":"application/json" },
+    body: JSON.stringify(Object.assign({action}, extra))
+  });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.error || d.message || ("http "+r.status));
+  return d;
+}
+
+/* ---------- LOGIN ---------- */
+function renderLogin(msg) {
+  $("app").innerHTML = `
+    <div class="card" style="margin-top:40px">
+      <div><h1>OmniReply</h1> <span class="pill red">GOD-MODE</span></div>
+      <p class="mut" style="margin:6px 0 16px">Owner access only. Cross-tenant lane.</p>
+      <input id="email" placeholder="owner email" autocapitalize="off" autocorrect="off" inputmode="email" />
+      <input id="pw" type="password" placeholder="password" />
+      <button class="btn-primary" onclick="doPw()">Sign in</button>
+      <button class="btn-link" onclick="doSendOtp()">email me a login code instead</button>
+      <div id="le" class="err hidden"></div>
+    </div>`;
+  if (msg) showLe(msg);
+}
+function renderOtp() {
+  $("app").innerHTML = `
+    <div class="card" style="margin-top:40px">
+      <div><h1>OmniReply</h1> <span class="pill red">GOD-MODE</span></div>
+      <p class="mut" style="margin:6px 0 16px">Code sent to ${esc(EMAIL)}.</p>
+      <input id="otp" placeholder="6-digit code" inputmode="numeric" style="text-align:center;letter-spacing:.3em" />
+      <button class="btn-primary" onclick="doVerify()">Verify code</button>
+      <button class="btn-link" onclick="renderLogin()">back</button>
+      <div id="le" class="err hidden"></div>
+    </div>`;
+}
+function showLe(m){ const e=$("le"); if(e){ e.textContent=m; e.classList.remove("hidden"); } }
+
+async function doPw(){
+  EMAIL=$("email").value.trim();
+  try { const d=await authReq("token?grant_type=password",{email:EMAIL,password:$("pw").value}); TOKEN=d.access_token; renderPanel(); }
+  catch(e){ showLe(e.message); }
+}
+async function doSendOtp(){
+  EMAIL=$("email").value.trim();
+  if(!EMAIL){ showLe("enter email first"); return; }
+  try { await authReq("otp",{email:EMAIL,create_user:false}); renderOtp(); }
+  catch(e){ showLe(e.message); }
+}
+async function doVerify(){
+  try { const d=await authReq("verify",{type:"email",email:EMAIL,token:$("otp").value.trim()}); TOKEN=d.access_token; renderPanel(); }
+  catch(e){ showLe(e.message); }
+}
+
+/* ---------- PANEL ---------- */
+const fresh = ts => ts && (Date.now()-new Date(ts).getTime() < 300000);
+function renderPanel(){
+  $("app").innerHTML = `
+    <div class="row" style="margin-bottom:4px">
+      <div><h1>OmniReply</h1> <span class="pill red">GOD-MODE</span></div>
+      <button class="btn-link" style="width:auto" onclick="signOut()">sign out</button>
+    </div>
+    <p class="mut trunc" style="margin:0 0 8px">owner · ${esc(EMAIL)}</p>
+    <div id="perr"></div>
+    <h2>WA Worker Pool</h2><div id="workers"><p class="mut">loading…</p></div>
+    <div class="row"><h2>Tenants</h2><button class="btn-link" style="width:auto" onclick="load()">refresh</button></div>
+    <div id="tenants" class="stack"><p class="mut">loading…</p></div>
+    <h2>Broadcast</h2>
+    <div class="blast">
+      <div style="margin-bottom:4px"><b style="color:#fcd34d">📢 Broadcast Blast</b> <span class="pill amber">HIGH IMPACT</span> <span class="pill red">LOCKED</span></div>
+      <p style="color:rgba(252,211,77,.7);font-size:12px;margin:0">Held: (A) owner banner vs (B) per-tenant WA blast (consent-gated). Endpoint 501 until wired.</p>
+    </div>
+    <h2>Session Log</h2><div id="log" class="log"><div>no actions</div></div>`;
+  load();
+}
+function signOut(){ TOKEN=null; renderLogin(); }
+function perr(m){ $("perr").innerHTML = m? `<div class="err">${esc(m)}</div>`:""; }
+
+async function load(){
+  try {
+    const d = await callFn("list");
+    perr("");
+    const ws=d.workers||[];
+    $("workers").innerHTML = ws.length? ws.map(w=>`
+      <div class="card row" style="margin-bottom:8px;padding:11px">
+        <div class="trunc"><div class="trunc">${esc(w.host)}</div><div class="mut">${w.active_sessions}/${w.capacity} sessions</div></div>
+        <span class="pill ${fresh(w.last_heartbeat)?'green':'red'}">${fresh(w.last_heartbeat)?'online':'stale'}</span>
+      </div>`).join("") : '<p class="mut">none</p>';
+    const ts=d.tenants||[];
+    $("tenants").innerHTML = ts.length? ts.map(t=>tenantCard(t)).join("")
+      : '<div class="card mut">No tenants yet (0 orgs). This successful load still proves the auth→guard→audit chain (audit row written).</div>';
+    logIt(`list → ${ts.length} tenants, ${ws.length} workers`);
+  } catch(e){ perr(e.message); logIt("list FAILED: "+e.message); }
+}
+function tenantCard(t){
+  const susp = t.status==="suspended";
+  return `<div class="card">
+    <div class="trunc" style="font-weight:600">${esc(t.name||"(unnamed)")}</div>
+    <div class="mut trunc">${esc(t.id)}</div>
+    <div style="margin-top:6px">
+      <span class="pill ${susp?'red':'green'}">${esc(t.status)}</span>
+      <span class="pill">${esc(t.plan||'no plan')}</span>
+      <span class="pill">${t.members} members</span>
+      ${t.subscription?`<span class="pill amber">sub: ${esc(t.subscription.status)}</span>`:''}
+    </div>
+    <div class="grid2">
+      <button class="${susp?'ok':'danger'}" onclick="act('${susp?'reactivate':'suspend'}','${t.id}','${esc(t.name)}')">${susp?'Reactivate':'Suspend'}</button>
+      <button onclick="act('billing_view','${t.id}','${esc(t.name)}')">Billing</button>
+      <button onclick="act('billing_override','${t.id}','${esc(t.name)}')">Override sub</button>
+      <button class="danger" onclick="act('impersonate_start','${t.id}','${esc(t.name)}')">⚠ Impersonate</button>
+    </div></div>`;
+}
+async function act(action, org, name){
+  try {
+    if(action==="impersonate_start"){
+      if(!confirm("IMPERSONATE "+name+"?\nRLS bypass. 15-min time-boxed. Audited.")) return;
+      const d=await callFn("impersonate_start",{org_id:org,confirm:true});
+      logIt("impersonate "+name+" → exp "+d.grant.expires_at); alert("Grant issued.\nExpires: "+d.grant.expires_at); return;
+    }
+    if(action==="billing_view"){ const d=await callFn("billing_view",{org_id:org}); alert(JSON.stringify(d.subscription,null,2)||"no subscription"); logIt("billing_view "+name); return; }
+    if(action==="billing_override"){
+      const status=prompt("New sub status? (blank=skip)"); const plan=prompt("New plan? (blank=skip)");
+      const ex={org_id:org}; if(status)ex.status=status; if(plan)ex.plan=plan;
+      const d=await callFn("billing_override",ex); logIt("override "+name+" → "+JSON.stringify(d.applied)+" (Stripe unchanged)"); return;
+    }
+    await callFn(action,{org_id:org}); logIt(action+" "+name); load();
+  } catch(e){ perr(e.message); logIt(action+" FAILED: "+e.message); }
+}
+
+renderLogin();
+</script>
+</body>
+</html>
