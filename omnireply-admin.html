@@ -17,10 +17,12 @@
   .card { background:var(--card); border:1px solid var(--ring); border-radius:14px; padding:14px; }
   h1 { font-size:18px; margin:0; display:inline; }
   h2 { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:18px 0 8px; }
-  input { width:100%; background:#1e293b; border:0; border-radius:10px; padding:11px 12px; color:#fff; font-size:15px; margin-bottom:10px; outline:none; }
-  input:focus { box-shadow:0 0 0 2px #475569; }
+  input,textarea,select { width:100%; background:#1e293b; border:0; border-radius:10px; padding:11px 12px; color:#fff; font-size:15px; margin-bottom:10px; outline:none; font-family:inherit; }
+  input:focus,textarea:focus,select:focus { box-shadow:0 0 0 2px #475569; }
+  textarea { min-height:64px; resize:vertical; }
   button { border:0; border-radius:10px; padding:10px; font-size:13px; font-weight:600; color:#fff; background:#334155; cursor:pointer; }
   .btn-primary { width:100%; background:#f1f5f9; color:#0f172a; padding:12px; font-size:15px; }
+  .btn-amber { width:100%; background:#f59e0b; color:#1c1917; padding:12px; font-size:15px; }
   .btn-link { background:none; color:var(--mut); text-decoration:underline; font-size:12px; width:100%; margin-top:6px; padding:6px; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
   .danger { background:rgba(239,68,68,.22); color:#fca5a5; }
@@ -121,13 +123,21 @@ function renderPanel(){
     <h2>WA Worker Pool</h2><div id="workers"><p class="mut">loading…</p></div>
     <div class="row"><h2>Tenants</h2><button class="btn-link" style="width:auto" onclick="load()">refresh</button></div>
     <div id="tenants" class="stack"><p class="mut">loading…</p></div>
-    <h2>Broadcast</h2>
+    <h2>Broadcast · Owner Announcement</h2>
     <div class="blast">
-      <div style="margin-bottom:4px"><b style="color:#fcd34d">📢 Broadcast Blast</b> <span class="pill amber">HIGH IMPACT</span> <span class="pill red">LOCKED</span></div>
-      <p style="color:rgba(252,211,77,.7);font-size:12px;margin:0">Held: (A) owner banner vs (B) per-tenant WA blast (consent-gated). Endpoint 501 until wired.</p>
+      <div style="margin-bottom:8px"><b style="color:#fcd34d">📢 Broadcast Blast</b> <span class="pill amber">HIGH IMPACT</span></div>
+      <input id="bcTitle" placeholder="Headline (required)" />
+      <textarea id="bcBody" placeholder="Message body (optional)"></textarea>
+      <select id="bcTone">
+        <option value="promo">promo (FOMO / upsell)</option>
+        <option value="info">info</option>
+        <option value="warning">warning</option>
+      </select>
+      <button class="btn-amber" onclick="postBroadcast()">Post to all tenants</button>
     </div>
+    <div id="bcList" class="stack" style="margin-top:10px"><p class="mut">loading…</p></div>
     <h2>Session Log</h2><div id="log" class="log"><div>no actions</div></div>`;
-  load();
+  load(); loadBroadcasts();
 }
 function signOut(){ TOKEN=null; renderLogin(); }
 function perr(m){ $("perr").innerHTML = m? `<div class="err">${esc(m)}</div>`:""; }
@@ -181,6 +191,29 @@ async function act(action, org, name){
     }
     await callFn(action,{org_id:org}); logIt(action+" "+name); load();
   } catch(e){ perr(e.message); logIt(action+" FAILED: "+e.message); }
+}
+
+/* ---------- BROADCAST (Option A) ---------- */
+async function loadBroadcasts(){
+  try {
+    const d=await callFn("broadcast_list"); const a=d.announcements||[];
+    $("bcList").innerHTML = a.length? a.map(x=>`
+      <div class="card row" style="padding:11px">
+        <div class="trunc"><div class="trunc" style="font-weight:600">${esc(x.title)}</div><div class="mut trunc">${esc(x.tone)} · ${x.active?'active':'inactive'}</div></div>
+        <button style="width:auto" class="${x.active?'danger':'ok'}" onclick="toggleBc('${x.id}',${x.active?'false':'true'})">${x.active?'Deactivate':'Activate'}</button>
+      </div>`).join("") : '<p class="mut">no announcements yet</p>';
+  } catch(e){ $("bcList").innerHTML = `<p class="mut">${esc(e.message)}</p>`; }
+}
+async function postBroadcast(){
+  const title=$("bcTitle").value.trim(); if(!title){ perr("headline required"); return; }
+  try {
+    await callFn("broadcast",{ title, body:$("bcBody").value.trim(), tone:$("bcTone").value });
+    $("bcTitle").value=""; $("bcBody").value=""; logIt("broadcast posted: "+title); loadBroadcasts();
+  } catch(e){ perr(e.message); logIt("broadcast FAILED: "+e.message); }
+}
+async function toggleBc(id, active){
+  try { await callFn("broadcast_toggle",{id, active}); logIt("broadcast "+(active?"activated":"deactivated")); loadBroadcasts(); }
+  catch(e){ perr(e.message); }
 }
 
 renderLogin();
