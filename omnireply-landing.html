@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OmniReply — WhatsApp inbox for Malaysian SMEs</title>
+<meta name="description" content="OmniReply auto-replies to your WhatsApp, Instagram and Messenger in BM and English — trained on your own price list and FAQ. Built for Malaysian SMEs." />
+<script>
+  window.__omrDeps = false;
+  function omrLoad(list, done){
+    var i = 0;
+    function next(){
+      if (i >= list.length){ done && done(); return; }
+      var s = document.createElement("script");
+      s.src = list[i].urls[list[i].at || 0];
+      s.onload = function(){ i++; next(); };
+      s.onerror = function(){
+        list[i].at = (list[i].at || 0) + 1;
+        if (list[i].at >= list[i].urls.length){
+          document.getElementById("root").innerHTML =
+            '<div style="font-family:sans-serif;padding:40px;text-align:center;color:#54656f">Could not load OmniReply. Please open this page in Safari or Chrome.</div>';
+          return;
+        }
+        next();
+      };
+      document.head.appendChild(s);
+    }
+    next();
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  if (window.tailwind) tailwind.config = { darkMode: "class" };
+</script>
+<style>
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  @keyframes omrRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .omr-rise{animation:omrRise .5s ease both}
+  @keyframes omrPop{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
+  .omr-pop{animation:omrPop .35s ease both}
+  .omr-grid-bg{background-image:radial-gradient(#d7e0e2 1px,transparent 1px);background-size:22px 22px}
+  .dark .omr-grid-bg{background-image:radial-gradient(#1d2a31 1px,transparent 1px)}
+</style>
+</head>
+<body class="bg-white dark:bg-[#0b141a]">
+<div id="root">
+  <div style="font-family:sans-serif;padding:40px;text-align:center;color:#54656f">Loading OmniReply…</div>
+</div>
+
+<script>
+  omrLoad([
+    { urls: [
+      "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
+      "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
+      "https://unpkg.com/react@18.3.1/umd/react.production.min.js"
+    ]},
+    { urls: [
+      "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
+      "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
+      "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
+    ]},
+    { urls: [
+      "https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.2/babel.min.js",
+      "https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.2/babel.min.js",
+      "https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"
+    ]}
+  ], function(){
+    window.__omrDeps = true;
+    var src = document.getElementById("omr-src").textContent;
+    try {
+      var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
+      (0, eval)(out);
+    } catch (e) {
+      document.getElementById("root").innerHTML =
+        '<div style="font-family:sans-serif;padding:40px;text-align:center;color:#e53935">Build error: ' + (e && e.message ? e.message : e) + '</div>';
+    }
+  });
+</script>
+
+<script type="text/babel-source" id="omr-src">
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+
+/* ---------- design tokens (match app mockup) ---------- */
+var GREEN = "#00a884";
+var GREEN_D = "#008f72";
+var card = "bg-white dark:bg-[#202c33] border border-[#e9edef] dark:border-[#2a3942] rounded-2xl";
+var mut = "text-[#667781] dark:text-[#8696a0]";
+var ink = "text-[#111b21] dark:text-[#e9edef]";
+
+/* ---------- copy (EN / BM) ---------- */
+var T = {
+  en: {
+    nav_features: "Features", nav_pricing: "Pricing", nav_faq: "FAQ",
+    login: "Log in", cta: "Start free trial",
+    hero_eyebrow: "WhatsApp-first inbox",
+    hero_h: "Reply to every customer in seconds — even while you sleep.",
+    hero_sub: "OmniReply answers WhatsApp, Instagram and Messenger in Bahasa Malaysia and English, trained on your own price list and FAQ. One inbox for the whole team.",
+    hero_cta: "Start free trial", hero_alt: "See how it works",
+    hero_note: "No credit card · Connect in 2 minutes · Cancel anytime",
+    trust: "Trusted by Malaysian SMEs from KL to Kuching",
+    demo_label: "Live reply demo",
+    demo_q: "Tudung navy dah restock ke? Pos ke Penang berapa?",
+    demo_a: "Tudung navy dah restock pagi tadi 🎉 Pos ke Penang RM8 guna J&T (2–3 hari). Nak saya simpankan satu untuk you?",
+    demo_tag: "Answered from your knowledge base · 0.8s",
+    problem_eyebrow: "The 11pm problem",
+    problem_h: "Customers message after hours. You lose the sale by morning.",
+    problem_body: "Most Malaysian buyers expect a reply within minutes. Miss the window and they buy from the next seller. OmniReply replies instantly, in the right language, with answers pulled straight from your own catalogue.",
+    stat1: "of buyers expect a reply in under 5 minutes", stat1n: "82%",
+    stat2: "of sales lost are simply unanswered messages", stat2n: "1 in 3",
+    stat3: "average response time with OmniReply", stat3n: "42s",
+    feat_eyebrow: "Everything in one inbox",
+    feat_h: "Built for how Malaysian SMEs actually sell.",
+    features: [
+      ["Unified inbox", "WhatsApp, Instagram DM and Messenger in one screen — no more app-switching.", "💬"],
+      ["AI auto-reply", "Instant answers in BM or English, in your shop's tone. Hands off to you when unsure.", "✨"],
+      ["Knowledge base", "Upload your price list, FAQ or catalogue. Replies come straight from your real info.", "📚"],
+      ["Contacts & tags", "Every customer saved with tags, spend and history. Find anyone in a second.", "👥"],
+      ["Broadcast", "Send Raya promos or restock alerts to opted-in customers, scheduled or instant.", "📣"],
+      ["Analytics", "See messages, response time, AI-resolved rate and CSAT at a glance.", "📊"],
+      ["Team seats", "Add agents, assign chats, see who's online. Owner stays in control.", "🧑‍💼"],
+      ["Business hours", "Auto-reply runs your hours; quiet outside them. Set once, forget it.", "🕐"],
+      ["Smart routing", "Hand off to a human the moment a chat needs one — nothing falls through.", "🔀"],
+      ["Reply tones", "Friendly, formal or playful — match your brand on every message.", "🎭"],
+      ["Your number", "Keep your existing WhatsApp number. Connect as a linked device, no migration.", "🔗"],
+      ["Secure by design", "Your keys stay server-side in an encrypted vault. Disconnect anytime.", "🔒"]
+    ],
+    how_eyebrow: "Live in minutes",
+    how_h: "Three steps to a self-running inbox.",
+    how: [
+      ["Connect WhatsApp", "Scan one QR code to link your number as a companion device."],
+      ["Add your knowledge", "Drop in your price list, FAQ or catalogue — PDF, sheet, or a link."],
+      ["Go live", "OmniReply starts replying. You jump in only when you want to."]
+    ],
+    price_eyebrow: "Simple pricing",
+    price_h: "Start free. Upgrade when you grow.",
+    price_per: "/mo", price_most: "Most popular", price_cta: "Start free trial",
+    plans: [
+      ["Free", "0", ["1 WhatsApp number", "50 AI replies/mo", "1 agent seat", "Basic inbox"], false],
+      ["Starter", "129", ["1 channel", "1,500 AI replies/mo", "2 agent seats", "Knowledge base", "Broadcast"], true],
+      ["Growth", "649", ["All channels", "Unlimited AI replies", "6 agent seats", "Full analytics", "Priority routing"], false]
+    ],
+    faq_eyebrow: "Questions",
+    faq_h: "Everything you might ask.",
+    faq: [
+      ["Will I get banned for connecting WhatsApp?", "OmniReply links to your number as a companion (linked) device — the same way WhatsApp Web works. Use a business number you control and keep your phone online. Unofficial connections always carry a small risk, so we make the risk clear before you connect."],
+      ["Does it really reply in Bahasa Malaysia?", "Yes. OmniReply detects the customer's language and answers in BM or English in your shop's tone — Manglish included. You set the default and it adapts per chat."],
+      ["Do I need to keep my phone on?", "Yes, like WhatsApp Web your phone needs to stay online for messages to sync. Most owners keep it charging at the counter."],
+      ["Can my team use it together?", "Yes. Add agent seats, assign chats and see who's online. The owner stays in control of settings and billing."],
+      ["What happens when the AI isn't sure?", "It hands the chat to a human — you or an agent — instead of guessing. You can also turn auto-reply off entirely and use OmniReply as a shared inbox."],
+      ["Can I cancel anytime?", "Yes. No lock-in. Disconnect your number and cancel from billing whenever you like."]
+    ],
+    final_h: "Stop losing sales to slow replies.",
+    final_sub: "Connect your WhatsApp in two minutes and let OmniReply handle the rest.",
+    final_cta: "Start free trial",
+    foot_tag: "WhatsApp-first inbox for Malaysian SMEs.",
+    foot_rights: "All rights reserved."
+  },
+  bm: {
+    nav_features: "Ciri", nav_pricing: "Harga", nav_faq: "Soalan",
+    login: "Log masuk", cta: "Mula percubaan percuma",
+    hero_eyebrow: "Peti masuk WhatsApp",
+    hero_h: "Balas setiap pelanggan dalam saat — walaupun masa anda tidur.",
+    hero_sub: "OmniReply menjawab WhatsApp, Instagram dan Messenger dalam Bahasa Malaysia dan English, dilatih dengan senarai harga dan FAQ anda sendiri. Satu peti masuk untuk seluruh pasukan.",
+    hero_cta: "Mula percubaan percuma", hero_alt: "Lihat cara ia berfungsi",
+    hero_note: "Tanpa kad kredit · Sambung dalam 2 minit · Batal bila-bila masa",
+    trust: "Dipercayai PKS Malaysia dari KL hingga Kuching",
+    demo_label: "Demo balasan langsung",
+    demo_q: "Tudung navy dah restock ke? Pos ke Penang berapa?",
+    demo_a: "Tudung navy dah restock pagi tadi 🎉 Pos ke Penang RM8 guna J&T (2–3 hari). Nak saya simpankan satu untuk you?",
+    demo_tag: "Dijawab dari pangkalan ilmu anda · 0.8s",
+    problem_eyebrow: "Masalah pukul 11 malam",
+    problem_h: "Pelanggan mesej lewat malam. Menjelang pagi, jualan dah lesap.",
+    problem_body: "Kebanyakan pembeli Malaysia mahu balasan dalam beberapa minit. Terlepas waktu tu, mereka beli dari penjual lain. OmniReply balas serta-merta, dalam bahasa yang betul, dengan jawapan terus dari katalog anda sendiri.",
+    stat1: "pembeli mahu balasan dalam bawah 5 minit", stat1n: "82%",
+    stat2: "jualan hilang hanyalah mesej yang tak dibalas", stat2n: "1 dari 3",
+    stat3: "purata masa balas dengan OmniReply", stat3n: "42s",
+    feat_eyebrow: "Semua dalam satu peti masuk",
+    feat_h: "Dibina untuk cara PKS Malaysia berniaga.",
+    features: [
+      ["Peti masuk bersatu", "WhatsApp, Instagram DM dan Messenger dalam satu skrin — tak payah tukar app.", "💬"],
+      ["Auto-balas AI", "Jawapan serta-merta dalam BM atau English, ikut nada kedai anda. Serah pada anda bila tak pasti.", "✨"],
+      ["Pangkalan ilmu", "Muat naik senarai harga, FAQ atau katalog. Balasan terus dari info sebenar anda.", "📚"],
+      ["Kenalan & tag", "Setiap pelanggan disimpan dengan tag, perbelanjaan dan sejarah. Cari sesiapa dalam sesaat.", "👥"],
+      ["Siaran", "Hantar promo Raya atau alert stok baru kepada pelanggan yang opt-in, berjadual atau serta-merta.", "📣"],
+      ["Analitik", "Lihat mesej, masa balas, kadar selesai AI dan CSAT sekali pandang.", "📊"],
+      ["Kerusi pasukan", "Tambah ejen, agih chat, lihat siapa online. Pemilik kekal mengawal.", "🧑‍💼"],
+      ["Waktu bisnes", "Auto-balas ikut waktu anda; senyap di luar waktu. Set sekali, lupakan.", "🕐"],
+      ["Penghalaan pintar", "Serah kepada manusia sebaik chat perlukannya — tiada yang terlepas.", "🔀"],
+      ["Nada balasan", "Mesra, formal atau ceria — padan jenama anda pada setiap mesej.", "🎭"],
+      ["Nombor anda", "Kekalkan nombor WhatsApp sedia ada. Sambung sebagai peranti pendamping, tanpa migrasi.", "🔗"],
+      ["Selamat dari asas", "Kunci anda kekal di server dalam vault tersulit. Putuskan bila-bila masa.", "🔒"]
+    ],
+    how_eyebrow: "Siap dalam minit",
+    how_h: "Tiga langkah ke peti masuk yang jalan sendiri.",
+    how: [
+      ["Sambung WhatsApp", "Imbas satu kod QR untuk pautkan nombor sebagai peranti pendamping."],
+      ["Tambah ilmu anda", "Masukkan senarai harga, FAQ atau katalog — PDF, sheet, atau pautan."],
+      ["Mula beroperasi", "OmniReply mula membalas. Anda masuk hanya bila mahu."]
+    ],
+    price_eyebrow: "Harga mudah",
+    price_h: "Mula percuma. Naik taraf bila berkembang.",
+    price_per: "/bln", price_most: "Paling popular", price_cta: "Mula percubaan percuma",
+    plans: [
+      ["Percuma", "0", ["1 nombor WhatsApp", "50 balasan AI/bln", "1 kerusi ejen", "Peti masuk asas"], false],
+      ["Starter", "129", ["1 saluran", "1,500 balasan AI/bln", "2 kerusi ejen", "Pangkalan ilmu", "Siaran"], true],
+      ["Growth", "649", ["Semua saluran", "Balasan AI tanpa had", "6 kerusi ejen", "Analitik penuh", "Penghalaan keutamaan"], false]
+    ],
+    faq_eyebrow: "Soalan",
+    faq_h: "Semua yang anda mungkin tanya.",
+    faq: [
+      ["Adakah saya akan diban kerana sambung WhatsApp?", "OmniReply pautkan nombor anda sebagai peranti pendamping (linked device) — sama cara WhatsApp Web berfungsi. Guna nombor bisnes yang anda kawal dan pastikan telefon dalam talian. Sambungan tidak rasmi sentiasa ada sedikit risiko, jadi kami terangkan risiko itu sebelum anda sambung."],
+      ["Betul ke ia balas dalam Bahasa Malaysia?", "Ya. OmniReply mengesan bahasa pelanggan dan menjawab dalam BM atau English ikut nada kedai anda — Manglish pun boleh. Anda set lalai dan ia sesuaikan ikut chat."],
+      ["Perlu ke telefon saya sentiasa hidup?", "Ya, macam WhatsApp Web telefon anda perlu kekal online untuk mesej selari. Kebanyakan pemilik biarkan ia mengecas di kaunter."],
+      ["Boleh ke pasukan saya guna bersama?", "Boleh. Tambah kerusi ejen, agih chat dan lihat siapa online. Pemilik kekal mengawal tetapan dan bil."],
+      ["Apa jadi bila AI tak pasti?", "Ia serahkan chat kepada manusia — anda atau ejen — bukannya meneka. Anda juga boleh matikan auto-balas terus dan guna OmniReply sebagai peti masuk berkongsi."],
+      ["Boleh batal bila-bila masa?", "Boleh. Tiada terikat. Putuskan nombor dan batal dari bil bila-bila masa anda suka."]
+    ],
+    final_h: "Berhenti hilang jualan kerana balasan lambat.",
+    final_sub: "Sambung WhatsApp anda dalam dua minit dan biar OmniReply uruskan selebihnya.",
+    final_cta: "Mula percubaan percuma",
+    foot_tag: "Peti masuk WhatsApp untuk PKS Malaysia.",
+    foot_rights: "Hak cipta terpelihara."
+  }
+};
+
+/* ---------- atoms ---------- */
+function Logo(props){
+  var sz = props.sz || "w-8 h-8 text-sm";
+  return (
+    <span className="inline-flex items-center gap-2 font-bold">
+      <span className={"rounded-lg bg-[" + GREEN + "] text-white grid place-items-center font-black " + sz}>O</span>
+      <span className={ink}>OmniReply</span>
+    </span>
+  );
+}
+function Btn(props){
+  var kind = props.kind || "primary";
+  var k = kind === "primary"
+    ? "bg-[" + GREEN + "] hover:bg-[" + GREEN_D + "] text-white"
+    : kind === "ghost"
+    ? "bg-transparent hover:bg-[#f0f2f5] dark:hover:bg-[#2a3942] " + ink + " border border-[#e9edef] dark:border-[#2a3942]"
+    : "bg-[#f0f2f5] dark:bg-[#2a3942] " + ink;
+  return (
+    <button onClick={props.onClick}
+      className={"px-5 py-2.5 rounded-xl text-sm font-semibold transition " + k + " " + (props.className || "")}>
+      {props.children}
+    </button>
+  );
+}
+function Eyebrow(props){
+  return (
+    <div className="inline-flex items-center gap-2 mb-3">
+      <span className={"w-6 h-px bg-[" + GREEN + "]"}></span>
+      <span className={"text-xs font-bold uppercase tracking-widest text-[" + GREEN_D + "] dark:text-[#25d366]"}>{props.children}</span>
+    </div>
+  );
+}
+
+/* ---------- phone-frame hero demo ---------- */
+function PhoneDemo(props){
+  var t = props.t;
+  var step = props.step;
+  return (
+    <div className="relative mx-auto w-[290px]">
+      <div className="rounded-[2.4rem] bg-[#111b21] p-2.5 shadow-2xl shadow-black/30 ring-1 ring-black/10">
+        <div className="rounded-[1.9rem] overflow-hidden bg-[#efeae2] dark:bg-[#0b141a]">
+          <div className={"flex items-center gap-2.5 px-3.5 py-3 bg-[" + GREEN_D + "] text-white"}>
+            <span className="w-8 h-8 rounded-full bg-white/20 grid place-items-center text-xs font-semibold">AR</span>
+            <div className="leading-tight">
+              <div className="text-sm font-semibold">Aisyah Rahman</div>
+              <div className="text-[11px] text-white/80">{props.online}</div>
+            </div>
+          </div>
+          <div className="p-3 space-y-2 min-h-[230px]">
+            <div className="flex justify-start">
+              <div className="max-w-[82%] bg-white dark:bg-[#202c33] rounded-xl rounded-tl-sm px-3 py-2 text-sm shadow-sm text-[#111b21] dark:text-[#e9edef]">
+                {t.demo_q}
+              </div>
+            </div>
+            {step >= 1 ? (
+              <div className="flex justify-end omr-pop">
+                <div className="max-w-[82%] bg-[#d9fdd3] dark:bg-[#005c4b] rounded-xl rounded-tr-sm px-3 py-2 text-sm shadow-sm text-[#111b21] dark:text-[#e9edef]">
+                  {t.demo_a}
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-end">
+                <div className="bg-[#d9fdd3] dark:bg-[#005c4b] rounded-xl rounded-tr-sm px-3 py-2.5 shadow-sm flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"0ms"}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"120ms"}}></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#54656f] animate-bounce" style={{animationDelay:"240ms"}}></span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {step >= 1 ? (
+        <div className={"omr-pop absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold px-3 py-1.5 rounded-full bg-white dark:bg-[#202c33] border border-[#e9edef] dark:border-[#2a3942] shadow-sm text-[" + GREEN_D + "] dark:text-[#25d366]"}>
+          ✨ {t.demo_tag}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ---------- FAQ item ---------- */
+function Faq(props){
+  var open = props.open;
+  return (
+    <div className={card + " overflow-hidden"}>
+      <button onClick={props.onClick} className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left">
+        <span className={"text-sm font-semibold " + ink}>{props.q}</span>
+        <span className={"shrink-0 text-lg transition " + mut + (open ? " rotate-45" : "")}>+</span>
+      </button>
+      {open ? <div className={"px-5 pb-4 text-sm leading-relaxed " + mut}>{props.a}</div> : null}
+    </div>
+  );
+}
+
+/* ---------- app ---------- */
+function App(){
+  var ls = useState("en"); var lang = ls[0], setLang = ls[1];
+  var ds = useState(false); var dark = ds[0], setDark = ds[1];
+  var ss = useState(0); var step = ss[0], setStep = ss[1];
+  var fs = useState(0); var faqOpen = fs[0], setFaqOpen = fs[1];
+  var ms = useState(false); var menu = ms[0], setMenu = ms[1];
+  var t = T[lang];
+
+  useEffect(function(){ document.documentElement.classList.toggle("dark", dark); }, [dark]);
+  useEffect(function(){
+    var id = setTimeout(function(){ setStep(1); }, 1100);
+    return function(){ clearTimeout(id); };
+  }, [lang]);
+
+  function go(){ window.location.href = "https://unifiws-tt.github.io/omnireply.html"; }
+
+  return (
+    <div className={ink}>
+      {/* nav */}
+      <header className="sticky top-0 z-30 bg-white/85 dark:bg-[#0b141a]/85 backdrop-blur border-b border-[#e9edef] dark:border-[#2a3942]">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          <Logo />
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+            <a href="#features" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_features}</a>
+            <a href="#pricing" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_pricing}</a>
+            <a href="#faq" className={"hover:text-[" + GREEN_D + "] " + mut}>{t.nav_faq}</a>
+          </nav>
+          <div className="flex items-center gap-2">
+            <button onClick={function(){ setLang(lang === "en" ? "bm" : "en"); }}
+              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#f0f2f5] dark:bg-[#2a3942]">{lang === "en" ? "BM" : "EN"}</button>
+            <button onClick={function(){ setDark(!dark); }}
+              className="text-xs px-2.5 py-1.5 rounded-lg bg-[#f0f2f5] dark:bg-[#2a3942]">{dark ? "☀️" : "🌙"}</button>
+            <button onClick={go} className="hidden sm:block"><Btn className="!py-2">{t.cta}</Btn></button>
+          </div>
+        </div>
+      </header>
+
+      {/* hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 omr-grid-bg opacity-60"></div>
+        <div className="relative max-w-6xl mx-auto px-5 pt-14 pb-20 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="omr-rise">
+            <Eyebrow>{t.hero_eyebrow}</Eyebrow>
+            <h1 className={"text-4xl md:text-5xl font-black leading-[1.08] tracking-tight " + ink}>{t.hero_h}</h1>
+            <p className={"mt-5 text-base md:text-lg leading-relaxed max-w-lg " + mut}>{t.hero_sub}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button onClick={go}><Btn className="!px-6 !py-3 text-base">{t.hero_cta} →</Btn></button>
+              <a href="#how"><Btn kind="ghost" className="!px-6 !py-3 text-base">{t.hero_alt}</Btn></a>
+            </div>
+            <p className={"mt-4 text-xs " + mut}>{t.hero_note}</p>
+            <div className="mt-7 flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {["AR","DT","NH","FH"].map(function(x,i){
+                  return <span key={i} className="w-8 h-8 rounded-full bg-[#dfe5e7] dark:bg-[#2a3942] ring-2 ring-white dark:ring-[#0b141a] grid place-items-center text-[10px] font-semibold text-[#54656f] dark:text-[#8696a0]">{x}</span>;
+                })}
+              </div>
+              <span className={"text-xs " + mut}>{t.trust}</span>
+            </div>
+          </div>
+          <div className="omr-rise" style={{animationDelay:"120ms"}}>
+            <div className="mb-3 text-center">
+              <span className={"text-xs font-semibold uppercase tracking-wide " + mut}>{t.demo_label}</span>
+            </div>
+            <PhoneDemo t={t} step={step} online={lang === "en" ? "online" : "dalam talian"} />
+          </div>
+        </div>
+      </section>
+
+      {/* problem + stats */}
+      <section className="max-w-6xl mx-auto px-5 py-16">
+        <div className="grid lg:grid-cols-2 gap-10 items-start">
+          <div>
+            <Eyebrow>{t.problem_eyebrow}</Eyebrow>
+            <h2 className={"text-2xl md:text-3xl font-bold leading-snug " + ink}>{t.problem_h}</h2>
+            <p className={"mt-4 leading-relaxed " + mut}>{t.problem_body}</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {[[t.stat1n,t.stat1],[t.stat2n,t.stat2],[t.stat3n,t.stat3]].map(function(s,i){
+              return (
+                <div key={i} className={card + " p-5"}>
+                  <div className={"text-3xl font-black text-[" + GREEN + "]"}>{s[0]}</div>
+                  <div className={"text-xs mt-2 leading-snug " + mut}>{s[1]}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* features */}
+      <section id="features" className="max-w-6xl mx-auto px-5 py-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <Eyebrow>{t.feat_eyebrow}</Eyebrow>
+          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.feat_h}</h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {t.features.map(function(f,i){
+            return (
+              <div key={i} className={card + " p-5 transition hover:-translate-y-0.5 hover:shadow-sm"}>
+                <div className="w-10 h-10 rounded-xl bg-[#e7f4ef] dark:bg-[#0c2e27] grid place-items-center text-lg mb-3">{f[2]}</div>
+                <div className={"font-semibold " + ink}>{f[0]}</div>
+                <div className={"text-sm mt-1 leading-relaxed " + mut}>{f[1]}</div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* how it works */}
+      <section id="how" className="max-w-6xl mx-auto px-5 py-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <Eyebrow>{t.how_eyebrow}</Eyebrow>
+          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.how_h}</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {t.how.map(function(s,i){
+            return (
+              <div key={i} className="relative">
+                <div className={card + " p-6 h-full"}>
+                  <div className={"w-9 h-9 rounded-full bg-[" + GREEN + "] text-white grid place-items-center font-bold mb-3"}>{i+1}</div>
+                  <div className={"font-semibold " + ink}>{s[0]}</div>
+                  <div className={"text-sm mt-1 leading-relaxed " + mut}>{s[1]}</div>
+                </div>
+                {i < 2 ? <span className={"hidden md:block absolute top-1/2 -right-2 text-[" + GREEN + "]"}>→</span> : null}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* pricing */}
+      <section id="pricing" className="max-w-6xl mx-auto px-5 py-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <Eyebrow>{t.price_eyebrow}</Eyebrow>
+          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.price_h}</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          {t.plans.map(function(p,i){
+            var pop = p[4];
+            return (
+              <div key={i} className={card + " p-6 relative " + (pop ? "ring-2 ring-[" + GREEN + "]" : "")}>
+                {pop ? <span className={"absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold px-3 py-1 rounded-full bg-[" + GREEN + "] text-white"}>{t.price_most}</span> : null}
+                <div className={"font-bold " + ink}>{p[0]}</div>
+                <div className="my-2">
+                  <span className={"text-3xl font-black " + ink}>RM{p[1]}</span>
+                  <span className={mut}>{t.price_per}</span>
+                </div>
+                <ul className="space-y-2 my-4">
+                  {p[3].map(function(f,j){
+                    return <li key={j} className={"text-sm flex gap-2 " + mut}><span className={"text-[" + GREEN + "]"}>✓</span>{f}</li>;
+                  })}
+                </ul>
+                <button onClick={go} className="w-full">
+                  <Btn kind={pop ? "primary" : "ghost"} className="w-full">{t.price_cta}</Btn>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* faq */}
+      <section id="faq" className="max-w-3xl mx-auto px-5 py-16">
+        <div className="text-center mb-10">
+          <Eyebrow>{t.faq_eyebrow}</Eyebrow>
+          <h2 className={"text-2xl md:text-3xl font-bold " + ink}>{t.faq_h}</h2>
+        </div>
+        <div className="space-y-3">
+          {t.faq.map(function(f,i){
+            return <Faq key={i} q={f[0]} a={f[1]} open={faqOpen === i} onClick={function(){ setFaqOpen(faqOpen === i ? -1 : i); }} />;
+          })}
+        </div>
+      </section>
+
+      {/* final cta */}
+      <section className="max-w-6xl mx-auto px-5 pb-20">
+        <div className={"rounded-3xl bg-[" + GREEN_D + "] text-white px-8 py-14 text-center relative overflow-hidden"}>
+          <div className="absolute inset-0 opacity-10 omr-grid-bg"></div>
+          <div className="relative">
+            <h2 className="text-2xl md:text-4xl font-black leading-tight max-w-2xl mx-auto">{t.final_h}</h2>
+            <p className="mt-4 text-white/85 max-w-lg mx-auto">{t.final_sub}</p>
+            <button onClick={go} className="mt-7">
+              <span className={"inline-block px-7 py-3.5 rounded-xl bg-white text-[" + GREEN_D + "] font-bold text-base hover:bg-white/90 transition"}>{t.final_cta} →</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* footer */}
+      <footer className="border-t border-[#e9edef] dark:border-[#2a3942]">
+        <div className="max-w-6xl mx-auto px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <Logo />
+            <p className={"text-xs mt-2 " + mut}>{t.foot_tag}</p>
+          </div>
+          <p className={"text-xs " + mut}>© 2026 OmniReply · {t.foot_rights}</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
